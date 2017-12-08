@@ -26,7 +26,7 @@ module.exports = {
         'window.jQuery': 'jquery'
     }),
     new HtmlWebpackPlugin({
-      template : './src/index.html',
+      template : './src/index-dev.html',
       filename: 'index.html'
   })],
   resolve: {

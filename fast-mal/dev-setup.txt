@@ -1,7 +1,24 @@
 # Initial build
-cd FASt-Mal-IMS/omero/omero-iviewer
-ant
+cd FASt-Mal/FASt-Mal-IMS/omero/omero-iviewer
 npm run debug
+
+# edit index.html in plugin directory to point to bundle.js
+cd FASt-Mal/FASt-Mal-IMS/omero/omero-iviewer/plugin
+vim index.html
+
+# comment out scripts and add:
+
+      <script type="text/javascript"
+              src="{% static 'omero_iviewer/bundle.js'|add:iviewer_url_suffix %}">
+      </script>
+
+
+# Install plugin into omero (where your virtual env is)
+cd FASt-Mal/OMERO.web
+source activate omerowebenv
+cd FASt-Mal/FASt-Mal-IMS/omero/omero-iviewer/plugin
+pip install -U -e .
+
 
 # Start OMERO.web client (configured for development):
 cd <wherever you install OMERO.web>
