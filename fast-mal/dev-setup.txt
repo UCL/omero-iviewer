@@ -1,0 +1,17 @@
+# Initial build
+cd FASt-Mal-IMS/omero/omero-iviewer
+ant
+npm run debug
+
+# Start OMERO.web client (configured for development):
+cd <wherever you install OMERO.web>
+OMERO.py/bin/omero web start
+
+# Start Webpack devserver:
+cd FASt-Mal-IMS/omero/omero-iviewer
+npm run dev
+
+# Routes requests on :5050 to either OMERO.web or OMERO.iviewer Webpack devserver
+cd FASt-Mal-IMS/omero/omero-iviewer/fast-mal
+node ./dev-proxy.js
+
