@@ -985,8 +985,7 @@ export default class RegionsEdit extends EventSubscriber {
         let editComment = $(this.element).find(".shape-edit-comment input");
         editComment.prop("value", this.fastmal_roi_types[type_id].name);
 
-        this.regions_info.fastmal_current_type = this.fastmal_roi_types[type_id].name;
-        this.regions_info.shape_defaults.Text = this.fastmal_roi_types[type_id].name;
+        this.regions_info.shape_defaults.Text = this.fastmal_roi_types[type_id].name.toUpperCase().replace(' ', '_');
 
         console.log(this.regions_info.data);
 
