@@ -54,10 +54,12 @@
                            show.bind="regions_info.number_of_shapes > 0">Show</label>
                 </div>
                 <div class="regions-table-col shape-type">&nbsp;</div>
+                <!--
                 <div class="regions-table-col shape-z">Z</div>
                 <div class="regions-table-col shape-t">T</div>
+                -->
                 <div class="regions-table-col shape-comment"
-                     show.bind="active_column === 'comments'">Comment
+                     show.bind="active_column === 'comments'">Type
                  </div>
                 <div class="regions-table-col shape-area"
                      show.bind="active_column === 'measurements'">
@@ -91,8 +93,10 @@
                          <div class="regions-table-col shape-type">
                              (${(roi.shapes.size - roi.deleted)})
                          </div>
+                         <!--
                         <div class="regions-table-col shape-z"></div>
                         <div class="regions-table-col shape-t"></div>
+                         -->
                         <div class="regions-table-col shape-comment"
                              style="display: none">
                         </div>
@@ -114,6 +118,7 @@
                                 title="Show/Hide shape" checked.one-way="shape.visible"
                                 change.delegate="toggleShapeVisibility(shape.shape_id, $event)"/>
                         </div>
+                        <!--
                         <div class="regions-table-col shape-type ${shape.type.toLowerCase()}-icon"></div>
                         <div class="regions-table-col shape-z">
                             ${shape.TheZ !== -1 ? (shape.TheZ + 1) : ""}
@@ -121,6 +126,7 @@
                         <div class="regions-table-col shape-t">
                             ${shape.TheT !== -1 ? (shape.TheT + 1) : ""}
                         </div>
+                        -->
                         <div class="regions-table-col shape-comment"
                              show.bind="active_column === 'comments'">
                                 ${shape.Text ? shape.Text : ''}

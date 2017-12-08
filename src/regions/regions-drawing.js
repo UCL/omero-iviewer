@@ -52,14 +52,14 @@ export default class RegionsDrawing extends EventSubscriber {
      * @type {Array.<string>}
      */
     supported_shapes = [
-        "rectangle",
-        "ellipse",
-        "point",
-        "arrow",
-        "line",
-        "polyline",
-        "polygon",
-        "label"
+        "rectangle"
+        // "ellipse",
+        // "point",
+        // "arrow",
+        // "line",
+        // "polyline",
+        // "polygon",
+        // "label"
     ];
 
     /**
@@ -71,7 +71,10 @@ export default class RegionsDrawing extends EventSubscriber {
         [REGIONS_SHAPE_GENERATED,
             (params={}) => this.onShapeDrawn(params)],
         [REGIONS_CHANGE_MODES,
-            (params={}) => this.onModeChange(params)]];
+            (params={}) => this.onModeChange(params)],
+        ["FASTMAL_DESELECTED",
+            (params={}) => this.onDrawShape(-1)],
+       ];
 
     /**
      * the list of property observers
@@ -392,4 +395,5 @@ export default class RegionsDrawing extends EventSubscriber {
         this.unsubscribe();
         this.unregisterObservers();
     }
+
 }

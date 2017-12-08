@@ -462,7 +462,7 @@ export default class RegionsInfo  {
             '@type': 'TBD#LengthI',
             'Unit': 'PIXEL',
             'Symbol': 'pixel',
-            'Value': 1
+            'Value': 3
         };
     }
 
