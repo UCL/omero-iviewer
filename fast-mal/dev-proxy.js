@@ -6,7 +6,7 @@
  * npm install http
  * npm install http-proxy
  *
- * run using: 
+ * run using:
  *
  * node ./dev-proxy.js
  */
@@ -21,7 +21,7 @@ var proxy = httpProxy.createProxyServer({ws:true});
 
 var server = http.createServer(function(req, res) {
 
-    if (req.url.startsWith('/static/omero_iviewer/bundle.js')) {
+    if (req.url.startsWith('/static/omero_iviewer/bundle.js') || req.url.startsWith('/sockjs-node/')) {
         target_host = OMERO_IVIEWER_DEVSERVER;
         new_url = req.url.replace("/static/omero_iviewer/", "/");
         req.url = new_url;
@@ -38,6 +38,4 @@ var server = http.createServer(function(req, res) {
 console.log("^ = 4080; * = static/omero_iviewer/bundle.js");
 console.log("Listening on port 5050")
 server.listen(5050);
-
-
 
