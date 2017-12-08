@@ -119,7 +119,7 @@ export default class Context {
      * @memberof Context
      * @type {String}
      */
-     selected_tab = TABS.SETTINGS;
+     selected_tab = TABS.ROIS;
 
      /**
       * should interpolation should be used for image rendering?
