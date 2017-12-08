@@ -66,6 +66,11 @@
             </button>
         </div>
 
+        <div style="float: left;">
+            <label repeat.for="roi_type of fastmal_roi_types">
+                <input type="radio" name="fastmal_roi_type" model.bind="roi_type.id" click.delegate="fastmalRoiClick($event)" /> ${roi_type.name} 
+            </label>
+        </div>
 
         <div class="shapes-edit">
             <div class="shape-edit-comment">

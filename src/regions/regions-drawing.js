@@ -162,6 +162,11 @@ export default class RegionsDrawing extends EventSubscriber {
      * @param {Object} params the event notification parameters
      */
     onShapeDrawn(params={}) {
+        /*** FASt-Mal */
+        console.log('./regions/regions-drawing.onShapeDrawn(); params = ');
+        console.log(params);
+        /*** /FASt-Mal */
+
         // if the event is for another config, forget it...
         if (params.config_id !== this.regions_info.image_info.config_id) return;
 
@@ -207,6 +212,10 @@ export default class RegionsDrawing extends EventSubscriber {
                         newShape.deleted = false;
                         newShape.modified = true;
 
+                        /*** FASt-Mal */
+                        newShape.Text = this.regions_info.shape_defaults['Text'];
+                        /*** /FASt-Mal */
+
                         // create deep copy
                         let genShape = Object.assign({}, newShape);
                         if (add) {
@@ -230,6 +239,17 @@ export default class RegionsDrawing extends EventSubscriber {
         let len = generatedShapes.length;
         // we update the overall number of shapes
         this.regions_info.number_of_shapes += len;
+
+        /*** FASt-Mal */
+        this.regions_info.selected_shapes = [generatedShapes[len-1].oldId];
+        this.context.publish(
+            "FASTMAL_COMMENT_UPDATE",
+            {
+                comment: this.regions_info.shape_defaults['Text'],
+                shape: generatedShapes[len-1]
+            });
+        /*** /FASt-Mal */
+
 
         // we only continue if we have been drawn and intend to propagate
         if (params.drawn)

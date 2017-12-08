@@ -66,7 +66,9 @@ export default class RegionsEdit extends EventSubscriber {
      * @memberof RegionsEdit
      * @type {Array.<string,function>}
      */
-    sub_list = [[IMAGE_DIMENSION_CHANGE, () => this.adjustEditWidgets()]];
+    sub_list = [[IMAGE_DIMENSION_CHANGE, () => this.adjustEditWidgets()],
+                ["FASTMAL_COMMENT_UPDATE", (params={}) => this.onCommentChange(params.comment, params.shape)]
+               ];
 
     /**
      * @memberof RegionsEdit
@@ -298,6 +300,13 @@ export default class RegionsEdit extends EventSubscriber {
      * @memberof RegionsEdit
      */
     onCommentChange(comment = '',shape=null) {
+        /*** FASt-Mal */
+        console.log('./regions/regions-edit.onCommentChange(); comment =');
+        console.log(comment);
+        console.log('shape =');
+        console.log(shape);
+        /*** /FASt-Mal */
+
         if (typeof shape !== 'object' || shape === null ||
             typeof comment !== 'string') return;
 
@@ -937,4 +946,51 @@ export default class RegionsEdit extends EventSubscriber {
     deleteShapes() {
         this.regions_info.deleteShapes();
     }
+
+
+    /*** FASt-Mal */
+    // ROI types for thick film
+    fastmal_roi_types = [
+        { id: 0, name: 'White cell' },
+        { id: 1, name: 'Parasite' },
+        { id: 2, name: 'Ignore' },
+        { id: 3, name: 'Unknown' },
+    ];
+
+    fastmal_roi_colours = ["102,194,165", "252,141,98", "141,160,203", "231,138,195"]
+
+    // Fired when radio button clicked
+    fastmalRoiClick(event_in) {
+        let type_id = event_in.target.model;
+        console.log('roiSelected() triggered = ' + type_id);
+        let rgb_string = 'rgb(' + this.fastmal_roi_colours[type_id] + ')';
+
+        let strokeOptions = this.getColorPickerOptions(false);
+        let strokeSpectrum =
+            $(this.element).find(".shape-stroke-color .spectrum-input");
+        strokeSpectrum.spectrum("set", rgb_string);
+        strokeSpectrum.spectrum(strokeOptions);
+        strokeSpectrum.spectrum("set", rgb_string);
+        this.onColorChange(rgb_string, false, null);
+        this.setDrawColors(rgb_string, false);
+
+        let strokeWidth = {
+            '@type': 'TBD#LengthI',
+            'Unit': 'PIXEL',
+            'Symbol': 'pixel',
+            'Value': 4
+        };
+        this.regions_info.shape_defaults.StrokeWidth = Object.assign({}, strokeWidth);
+
+        let editComment = $(this.element).find(".shape-edit-comment input");
+        editComment.prop("value", this.fastmal_roi_types[type_id].name);
+
+        this.regions_info.fastmal_current_type = this.fastmal_roi_types[type_id].name;
+        this.regions_info.shape_defaults.Text = this.fastmal_roi_types[type_id].name;
+
+        console.log(this.regions_info.data);
+
+        return true;
+    }
+    /*** /FASt-Mal */
 }
