@@ -953,35 +953,48 @@ export default class RegionsEdit extends EventSubscriber {
     /*** FASt-Mal */
     // ROI types for thick film
     fastmal_roi_types = [
-        { id: -1, name: 'Off'},
-        { id: 0, name: 'White cell' },
-        { id: 1, name: 'Parasite' },
-        { id: 2, name: 'Background' },
-        { id: 3, name: 'Ignore' },
+        { id: 0, name: 'Off'},
+        { id: 1, name: 'White cell' },
+        { id: 2, name: 'Parasite' },
+        { id: 3, name: 'Background' },
+        { id: 4, name: 'Ignore' },
     ];
 
-    fastmal_roi_colours = ["102,194,165", "252,141,98", "141,160,203", "231,138,195"]
+    fastmal_roi_colours = ["0,0,0", "102,194,165", "252,141,98", "141,160,203", "231,138,195"]
 
-    fastmal_selected_roi_type = null;
+    fastmal_selected_roi_type = 0;
 
     // Fired when radio button clicked
     fastmalRoiClick(event_in) {
         let type_id = event_in.target.model;
-        if (type_id == -1) {
+        console.log('fastmalRoiClick type_id = ' + type_id);
+
+        let rgb_string = 'rgb(' + this.fastmal_roi_colours[type_id] + ')';
+        this.regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
+        this.setDrawColors(rgb_string, false);
+
+        let strokeOptions = this.getColorPickerOptions(false);
+        let strokeSpectrum = $(this.element).find(".shape-stroke-color .spectrum-input");
+        $(".shape-stroke-color").attr('title', '');
+        strokeSpectrum.spectrum("enable");
+        let strokeColor = this.regions_info.shape_defaults.StrokeColor;
+        strokeOptions.color = Converters.signedIntegerToRgba(strokeColor);
+        strokeSpectrum.spectrum(strokeOptions);
+
+        if (type_id == 0) {
             this.regions_info.shape_defaults.Text = '';
             this.regions_info.shape_to_be_drawn = null;
-
             this.context.publish( "FASTMAL_DESELECTED", {});
-
             return true;
         }
 
-        let rgb_string = 'rgb(' + this.fastmal_roi_colours[type_id] + ')';
-        this.setDrawColors(rgb_string, false);
+        console.log('fastmalRoiClick type_id = ' + type_id + '; colour = ' + rgb_string);
         // let editComment = $(this.element).find(".shape-edit-comment input");
         // editComment.prop("value", this.fastmal_roi_types[type_id].name);
         this.regions_info.shape_defaults.Text = this.fastmal_roi_types[type_id].name.toUpperCase().replace(' ', '_');
+        console.log('fastmalRoiClick type_id = ' + type_id + '; Text = ' + this.regions_info.shape_defaults.Text);
         this.regions_info.shape_to_be_drawn = 'rectangle';
+        this.context.publish( "FASTMAL_SELECTED", {shape_id: 0});
         return true;
     }
     /*** /FASt-Mal */

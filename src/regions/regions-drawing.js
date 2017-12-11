@@ -74,6 +74,8 @@ export default class RegionsDrawing extends EventSubscriber {
             (params={}) => this.onModeChange(params)],
         ["FASTMAL_DESELECTED",
             (params={}) => this.onDrawShape(-1)],
+        ["FASTMAL_SELECTED",
+            (params={}) => this.onDrawShape(params.shape_id)]
        ];
 
     /**

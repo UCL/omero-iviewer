@@ -73,11 +73,13 @@
             </div>
         </div>
 
-    <div style="float: left; padding-top: 15px; height: 70px; vertical-align: middle;">
-        <label repeat.for="roi_type of fastmal_roi_types">
-            <input type="radio" name="fastmal_roi_type" checked.bind="fastmal_selected_roi_type" model.bind="roi_type.id" click.delegate="fastmalRoiClick($event)" /> ${roi_type.name}&nbsp;&nbsp;
-        </label>
-        </div
+    <div style="float: left; padding-top: 15px; height: 200px;">
+        Select ROI:<br /><br />
+        <ul style="list-style: none;">
+            <li repeat.for="roi_type of fastmal_roi_types">
+                <label><input type="radio" name="fastmal_roi_type" checked.bind="fastmal_selected_roi_type" model.bind="roi_type.id" click.delegate="fastmalRoiClick($event)" /> ${roi_type.name}</label>
+            </li>
+        </ul>
     </div>
 
 
