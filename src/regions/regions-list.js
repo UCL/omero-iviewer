@@ -210,12 +210,16 @@ export default class RegionsList extends EventSubscriber {
         }
     }
 
+
     /**
      * Gives the header the row width to avoid scalebar adjustment nonsense
      * @memberof RegionsList
      */
     setHeaderWidth() {
         $('.regions-header').width($('.regions-table-first-row').width());
+        let counts = this.regions_info.fastmal_get_info();
+        let html_out = "White cells = " + counts[0] + "; parasites = " + counts[1];
+        $('.fastmal-summary').html(html_out);
     }
 
     /**
