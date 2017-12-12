@@ -133,8 +133,9 @@ export default class RegionsEdit extends EventSubscriber {
      */
     waitForRegionsInfoReady() {
         if (this.regions_info === null) return;
-        this.fastmal_selected_roi_type = null;
 
+        // reset selected roi type
+        this.fastmal_selected_roi_type = 0;
 
         let onceReady = () => {
             // register observer
@@ -953,23 +954,31 @@ export default class RegionsEdit extends EventSubscriber {
     /*** FASt-Mal */
     // ROI types for thick film
     fastmal_roi_types = [
-        { id: 0, name: 'Off'},
-        { id: 1, name: 'White cell' },
-        { id: 2, name: 'Parasite' },
-        { id: 3, name: 'Background' },
-        { id: 4, name: 'Ignore' },
+        { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!', description: 'No shape - only select', colour: "0,0,0"},
+        { id: 1, name: 'White cell', code: 'FASTMAL:WHITE_CELL', description: '', colour: "102,194,165" },
+        { id: 2, name: 'Parasite', code: 'FASTMAL:PARASITE', description: '', colour:  "252,141,98"},
+        { id: 3, name: 'Background', code: 'FASTMAL:BACKGROUND', description: '', colour: "141,160,203"},
+        { id: 4, name: 'Ignore', code: 'FASTMAL:IGNORE', description: '', colour: "231,138,195" },
     ];
-
-    fastmal_roi_colours = ["0,0,0", "102,194,165", "252,141,98", "141,160,203", "231,138,195"]
 
     fastmal_selected_roi_type = 0;
 
     // Fired when radio button clicked
     fastmalRoiClick(event_in) {
+        this.last_selected = null;
         let type_id = event_in.target.model;
+
+        if (type_id == 0) {
+            this.regions_info.shape_defaults.Text = '';
+            this.regions_info.shape_to_be_drawn = null;
+            this.context.publish( "FASTMAL_DESELECTED", {});
+        } else {
+            this.regions_info.shape_to_be_drawn = 'rectangle';
+        }
+
         console.log('fastmalRoiClick type_id = ' + type_id);
 
-        let rgb_string = 'rgb(' + this.fastmal_roi_colours[type_id] + ')';
+        let rgb_string = 'rgb(' + this.fastmal_roi_types[type_id].colour + ')';
         this.regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
         this.setDrawColors(rgb_string, false);
 
@@ -982,18 +991,18 @@ export default class RegionsEdit extends EventSubscriber {
         strokeSpectrum.spectrum(strokeOptions);
 
         if (type_id == 0) {
-            this.regions_info.shape_defaults.Text = '';
-            this.regions_info.shape_to_be_drawn = null;
-            this.context.publish( "FASTMAL_DESELECTED", {});
+            // this.regions_info.shape_defaults.Text = '';
+            // this.regions_info.shape_to_be_drawn = null;
+            // this.context.publish( "FASTMAL_DESELECTED", {});
             return true;
         }
 
         console.log('fastmalRoiClick type_id = ' + type_id + '; colour = ' + rgb_string);
         // let editComment = $(this.element).find(".shape-edit-comment input");
         // editComment.prop("value", this.fastmal_roi_types[type_id].name);
-        this.regions_info.shape_defaults.Text = this.fastmal_roi_types[type_id].name.toUpperCase().replace(' ', '_');
+        this.regions_info.shape_defaults.Text = this.fastmal_roi_types[type_id].code;
         console.log('fastmalRoiClick type_id = ' + type_id + '; Text = ' + this.regions_info.shape_defaults.Text);
-        this.regions_info.shape_to_be_drawn = 'rectangle';
+
         this.context.publish( "FASTMAL_SELECTED", {shape_id: 0});
         return true;
     }
