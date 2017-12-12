@@ -681,6 +681,7 @@ export default class RegionsEdit extends EventSubscriber {
      * @memberof RegionsEdit
      */
     adjustStrokeEdit(canDo=false, showDisabled=true) {
+        return;
         let type =
             this.last_selected ? this.last_selected.type.toLowerCase() : null;
 
