@@ -24,14 +24,14 @@ import {inject, customElement, bindable, BindingEngine} from 'aurelia-framework'
 import {
     REGIONS_SET_PROPERTY, IMAGE_VIEWER_RESIZE, EventSubscriber
 } from '../events/events';
-import {FastMal} from '../fastmal/regions.js';
+import FastMal from '../fastmal/fastmal';
 
 /**
  * Represents the regions list/table in the regions settings/tab
  * @extend {EventSubscriber}
  */
 @customElement('regions-list')
-@inject(Context, BindingEngine)
+@inject(Context, BindingEngine, FastMal)
 export default class RegionsList extends EventSubscriber {
     /**
      * a bound reference to regions_info
@@ -78,10 +78,11 @@ export default class RegionsList extends EventSubscriber {
      * @param {Context} context the application context (injected)
      * @param {BindingEngine} bindingEngine the BindingEngine (injected)
      */
-    constructor(context, bindingEngine) {
+    constructor(context, bindingEngine, fastMal) {
         super(context.eventbus);
         this.context = context;
         this.bindingEngine = bindingEngine;
+        this.fastMal = fastMal;
     }
 
     /**
@@ -231,9 +232,7 @@ export default class RegionsList extends EventSubscriber {
 
     // FASt-Mal: update the ROI counts
     updateRoiCounts() {
-        let counts = FastMal.getRoiTypeCounts(this.regions_info);
-        let html_out = "White cells = " + counts[0] + "; parasites = " + counts[1];
-        $('.fastmal-summary').html(html_out);
+        $('.fastmal-summary').html(this.fastMal.getRoiTypeCountsHTML(this.regions_info));
     }
 
     /**

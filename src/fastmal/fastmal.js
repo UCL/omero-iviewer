@@ -4,9 +4,9 @@
  * Usage of these methods are peppered throughout the omero-iviewer code
  */
 
-import {inject, noView} from 'aurelia-framework';
+import {inject, noView, bindable} from 'aurelia-framework';
 import {Converters} from '../utils/converters';
-// import Context from '../app/context';
+import Context from '../app/context';
 
 // Constants for publish/subscribe events
 export const FASTMAL_DESELECTED = "FASTMAL_DESELECTED";
@@ -14,12 +14,12 @@ export const FASTMAL_SELECTED = "FASTMAL_SELECTED";
 export const FASTMAL_COMMENT_UPDATE = "FASTMAL_COMMENT_UPDATE";
 
 @noView
-// @inject(Context)
-export class FastMal {
-    // constructor(context) {
-    //     super(context.eventbus);
-    //     this.context = context;
-    // }
+@inject(Context)
+export default class FastMal {
+
+    constructor(context) {
+        this.context = context;
+    }
 
     static get THICK_FILM_ROI_TYPES() {
         return [
@@ -31,14 +31,17 @@ export class FastMal {
         ];
     }
 
-    static getRoiTypes() {
+    getRoiTypes() {
         // TODO: return either thick film or think film ROI types based on the dataset type
         return FastMal.THICK_FILM_ROI_TYPES;
     }
 
-    static getRoiTypeCounts(roi_info) {
-        let data = roi_info.data;
-        var count = {};
+    /**
+     * Iterates over all ROIs in regions_info and tallies the ROI Type
+     */
+    getRoiTypeCounts(regions_info) {
+        let data = regions_info.data;
+        let count = {};
         data.forEach(
             (value) =>
                 value.shapes.forEach(
@@ -50,27 +53,44 @@ export class FastMal {
         return count;
     }
 
-    static getRoiTypeCountsHTML(roi_info) {
-        let counts = FastMal.getRoiTypeCounts(roi_info);
-        let roi_types = FastMal.getRoiTypes();
-        var html = "";
-        var total;
-        for (var i = 1; i < roi_types.length; i++) {
+    /**
+     * Called by regions-list.js when ROI list changes. 
+     */
+    getRoiTypeCountsHTML(regions_info) {
+        let counts = this.getRoiTypeCounts(regions_info);
+        let roi_types = this.getRoiTypes();
+        let html = "";
+        let total;
+        for (let i = 1; i < roi_types.length; i++) {
             total = counts[roi_types[i].code] ? counts[roi_types[i].code] : 0;
             html += roi_types[i].name + " = " + total + "; ";
         }
         return html;
     }
 
-    static roiTypeSelected(event_in, regions_info, context, regions_edit_instance) {
+    /**
+     * Get active regions_info via the Context (testing...)
+     */
+    getRegionsInfo() {
+        let image_config = this.context.getSelectedImageConfig();
+        //console.log(image_config.image_info);
+        //console.log(image_config.regions_info);
+        return image_config.regions_info;
+    }
+
+    /**
+     * Triggered by regions-edit.js when user clicks on 'Select ROI' list
+     */
+    roiTypeSelected(event_in, regions_edit_instance) {
+        let regions_info = this.getRegionsInfo()
         let type_id = event_in.target.model;
-        let roi_types = FastMal.getRoiTypes();
+        let roi_types = this.getRoiTypes();
 
         // If we're turning off ROI shapes (i.e. select mode)
         if (type_id == 0) {
             regions_info.shape_defaults.Text = '';
             regions_info.shape_to_be_drawn = null;
-            context.publish(FASTMAL_DESELECTED, {});
+            this.context.publish(FASTMAL_DESELECTED, {});
             return true;
         }
 
@@ -81,8 +101,7 @@ export class FastMal {
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
         regions_edit_instance.setDrawColors(rgb_string, false);
 
-        context.publish(FASTMAL_SELECTED, {shape_id: 0});
+        this.context.publish(FASTMAL_SELECTED, {shape_id: 0});
         return true;
     }
 }
-

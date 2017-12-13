@@ -28,7 +28,7 @@ import {
     REGIONS_DRAW_SHAPE, REGIONS_SHAPE_GENERATED,
     REGIONS_GENERATE_SHAPES, REGIONS_CHANGE_MODES, EventSubscriber
 } from '../events/events';
-import {FastMal, FASTMAL_DESELECTED, FASTMAL_SELECTED, FASTMAL_COMMENT_UPDATE} from '../fastmal/regions.js';
+import {FASTMAL_DESELECTED, FASTMAL_SELECTED, FASTMAL_COMMENT_UPDATE} from '../fastmal/fastmal';
 
 /**
  * Represents the regions drawing palette in the right hand panel
