@@ -462,7 +462,7 @@ export default class RegionsInfo  {
             '@type': 'TBD#LengthI',
             'Unit': 'PIXEL',
             'Symbol': 'pixel',
-            'Value': 3
+            'Value': 2  // FASt-Mal: a thicker default stroke width
         };
     }
 
@@ -658,29 +658,6 @@ export default class RegionsInfo  {
                 callback();
             }
         });
-    }
-
-
-
-
-    fastmal_get_info() {
-        var white_cell = 0;
-        var parasite = 0;
-
-        this.data.forEach(
-            (value) =>
-                value.shapes.forEach(
-                    (value) => {
-                        let id = value.shape_id;
-                        if (value.Text === "WHITE_CELL") {
-                            white_cell++;
-                        } else if (value.Text === "PARASITE") {
-                            parasite++;
-                        }
-                    })
-        );
-
-        return [white_cell, parasite];
     }
 }
 

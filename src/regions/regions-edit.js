@@ -31,6 +31,7 @@ import {
 } from '../events/events';
 import {inject, customElement, bindable, BindingEngine} from 'aurelia-framework';
 import {spectrum} from 'spectrum-colorpicker';
+import {FastMal} from '../fastmal/regions.js';
 
 /**
  * Represents the regions section in the right hand panel
@@ -134,7 +135,7 @@ export default class RegionsEdit extends EventSubscriber {
     waitForRegionsInfoReady() {
         if (this.regions_info === null) return;
 
-        // reset selected roi type
+        // FASt-Mal: reset default selection for ROI type (0 = "off")
         this.fastmal_selected_roi_type = 0;
 
         let onceReady = () => {
@@ -681,6 +682,7 @@ export default class RegionsEdit extends EventSubscriber {
      * @memberof RegionsEdit
      */
     adjustStrokeEdit(canDo=false, showDisabled=true) {
+        // FASt-Mal: we don't want to override selection using the ROI type radio buttons
         return;
         let type =
             this.last_selected ? this.last_selected.type.toLowerCase() : null;
@@ -951,61 +953,13 @@ export default class RegionsEdit extends EventSubscriber {
         this.regions_info.deleteShapes();
     }
 
-
-    /*** FASt-Mal */
-    // ROI types for thick film
-    fastmal_roi_types = [
-        { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!', description: 'No shape - only select', colour: "0,0,0"},
-        { id: 1, name: 'White cell', code: 'FASTMAL:WHITE_CELL', description: '', colour: "102,194,165" },
-        { id: 2, name: 'Parasite', code: 'FASTMAL:PARASITE', description: '', colour:  "252,141,98"},
-        { id: 3, name: 'Background', code: 'FASTMAL:BACKGROUND', description: '', colour: "141,160,203"},
-        { id: 4, name: 'Ignore', code: 'FASTMAL:IGNORE', description: '', colour: "231,138,195" },
-    ];
-
+    // FASt-Mal
+    // The available ROI types for this image
+    fastmal_roi_types = FastMal.getRoiTypes();
+    // The currently selected ROI type
     fastmal_selected_roi_type = 0;
-
-    // Fired when radio button clicked
+    // Fired when ROI type radio button clicked
     fastmalRoiClick(event_in) {
-        this.last_selected = null;
-        let type_id = event_in.target.model;
-
-        if (type_id == 0) {
-            this.regions_info.shape_defaults.Text = '';
-            this.regions_info.shape_to_be_drawn = null;
-            this.context.publish( "FASTMAL_DESELECTED", {});
-        } else {
-            this.regions_info.shape_to_be_drawn = 'rectangle';
-        }
-
-        console.log('fastmalRoiClick type_id = ' + type_id);
-
-        let rgb_string = 'rgb(' + this.fastmal_roi_types[type_id].colour + ')';
-        this.regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
-        this.setDrawColors(rgb_string, false);
-
-        let strokeOptions = this.getColorPickerOptions(false);
-        let strokeSpectrum = $(this.element).find(".shape-stroke-color .spectrum-input");
-        $(".shape-stroke-color").attr('title', '');
-        strokeSpectrum.spectrum("enable");
-        let strokeColor = this.regions_info.shape_defaults.StrokeColor;
-        strokeOptions.color = Converters.signedIntegerToRgba(strokeColor);
-        strokeSpectrum.spectrum(strokeOptions);
-
-        if (type_id == 0) {
-            // this.regions_info.shape_defaults.Text = '';
-            // this.regions_info.shape_to_be_drawn = null;
-            // this.context.publish( "FASTMAL_DESELECTED", {});
-            return true;
-        }
-
-        console.log('fastmalRoiClick type_id = ' + type_id + '; colour = ' + rgb_string);
-        // let editComment = $(this.element).find(".shape-edit-comment input");
-        // editComment.prop("value", this.fastmal_roi_types[type_id].name);
-        this.regions_info.shape_defaults.Text = this.fastmal_roi_types[type_id].code;
-        console.log('fastmalRoiClick type_id = ' + type_id + '; Text = ' + this.regions_info.shape_defaults.Text);
-
-        this.context.publish( "FASTMAL_SELECTED", {shape_id: 0});
-        return true;
+        return FastMal.roiTypeSelected(event_in, this.regions_info, this.context, this);
     }
-    /*** /FASt-Mal */
 }

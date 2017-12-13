@@ -24,6 +24,7 @@ import {inject, customElement, bindable, BindingEngine} from 'aurelia-framework'
 import {
     REGIONS_SET_PROPERTY, IMAGE_VIEWER_RESIZE, EventSubscriber
 } from '../events/events';
+import {FastMal} from '../fastmal/regions.js';
 
 /**
  * Represents the regions list/table in the regions settings/tab
@@ -217,7 +218,7 @@ export default class RegionsList extends EventSubscriber {
      */
     setHeaderWidth() {
         $('.regions-header').width($('.regions-table-first-row').width());
-        let counts = this.regions_info.fastmal_get_info();
+        let counts = FastMal.getRoiTypeCounts(this.regions_info);
         let html_out = "White cells = " + counts[0] + "; parasites = " + counts[1];
         $('.fastmal-summary').html(html_out);
     }

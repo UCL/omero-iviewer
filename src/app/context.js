@@ -119,7 +119,7 @@ export default class Context {
      * @memberof Context
      * @type {String}
      */
-     selected_tab = TABS.ROIS;
+     selected_tab = TABS.ROIS;     // FASt-Mal: we prefer to display the ROI tab on load
 
      /**
       * should interpolation should be used for image rendering?

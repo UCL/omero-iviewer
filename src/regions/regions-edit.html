@@ -17,13 +17,13 @@
 -->
 <template>
         <div class="shapes-edit">
-            <!--
+            <!-- FASt-Mal: hide stroke colour/width inputs
             <div class="shape-fill-color"><input class="spectrum-input"/></div>
             <div class="shape-stroke-color"><input class="spectrum-input"/></div>
             <div class="shape-stroke-width"><input /></div>
             -->
 
-            <!--
+            <!-- FASt-Mal: hide arrow shape for line inputs
             <div class="dropdown rois-dropdown arrow-button"
                  title="Toggle arrow heads">
                 <button type="button"
@@ -50,7 +50,8 @@
                         data-toggle="dropdown">Edit
                 </button>
                 <ul class="dropdown-menu">
-                    <!-- <li if.bind="regions_info && regions_info.selected_shapes &&
+                    <!-- FASt-Mal: remove copy & paste functionality
+                    <li if.bind="regions_info && regions_info.selected_shapes &&
                                     regions_info.selected_shapes.length !== 0"
                         click.delegate="copyShapes()">
                             <a href="#">Copy</a>
@@ -73,18 +74,19 @@
             </div>
         </div>
 
-    <div style="float: left; padding-top: 15px; height: 200px;">
-        Select ROI:<br /><br />
-        <ul style="list-style: none;">
-            <li repeat.for="roi_type of fastmal_roi_types">
-                <label><input type="radio" name="fastmal_roi_type" checked.bind="fastmal_selected_roi_type" model.bind="roi_type.id" click.delegate="fastmalRoiClick($event)" /> ${roi_type.name}</label>
-            </li>
-        </ul>
-    </div>
+        <!-- FASt-Mal: display ROI type selection radio buttons -->
+        <div style="float: left; padding-top: 15px; height: 200px;">
+            Select ROI:<br /><br />
+            <ul style="list-style: none;">
+                <li repeat.for="roi_type of fastmal_roi_types">
+                    <label><input type="radio" name="fastmal_roi_type" checked.bind="fastmal_selected_roi_type" model.bind="roi_type.id" click.delegate="fastmalRoiClick($event)" /> ${roi_type.name}</label>
+                </li>
+            </ul>
+        </div>
 
 
 
-    <!-- FASt-Mal hide
+    <!-- FASt-Mal: hide shape comment input (we comment using the ROI type selected)
         <div class="shapes-edit">
             <div class="shape-edit-comment">
                 <input placeholder="Comment" class="form-control input-sm" />
@@ -104,7 +106,7 @@
             </div>
             <span tabindex="1"></span>
        </div>
-    /FASt-Mal hide -->
+    -->
 
     </div>
 </template>

@@ -52,14 +52,14 @@ export default class RegionsDrawing extends EventSubscriber {
      * @type {Array.<string>}
      */
     supported_shapes = [
-        "rectangle"
-        // "ellipse",
-        // "point",
-        // "arrow",
-        // "line",
-        // "polyline",
-        // "polygon",
-        // "label"
+        "rectangle",
+        "ellipse",
+        "point",
+        "arrow",
+        "line",
+        "polyline",
+        "polygon",
+        "label"
     ];
 
     /**
