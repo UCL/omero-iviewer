@@ -231,9 +231,7 @@ export default class RegionsList extends EventSubscriber {
 
     // FASt-Mal: update the ROI counts
     updateRoiCounts() {
-        let counts = FastMal.getRoiTypeCounts(this.regions_info);
-        let html_out = "White cells = " + counts[0] + "; parasites = " + counts[1];
-        $('.fastmal-summary').html(html_out);
+        $('.fastmal-summary').html(FastMal.getRoiTypeCountsHTML(this.regions_info));
     }
 
     /**
