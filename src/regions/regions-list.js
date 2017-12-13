@@ -110,6 +110,9 @@ export default class RegionsList extends EventSubscriber {
             // event subscriptions
             this.subscribe();
             setTimeout(() => this.setTableHeight(), 50);
+
+            // FASt-Mal: count ROI types on load
+            setTimeout(() => this.updateRoiCounts(), 50);
         };
 
         // tear down old observers
@@ -153,6 +156,13 @@ export default class RegionsList extends EventSubscriber {
                     (newValue, oldValue) =>
                         $('#shapes_visibility_toggler').prop(
                             'checked', newValue === 0)));
+
+        // FASt-Mal: update the summary ROI counts on list change
+        this.observers.push(
+            this.bindingEngine.propertyObserver(
+                this.regions_info, 'number_of_shapes').subscribe(
+                    (newValue, oldValue) =>
+                        setTimeout(() => this.updateRoiCounts(), 50)));
     }
 
     /**
@@ -211,13 +221,16 @@ export default class RegionsList extends EventSubscriber {
         }
     }
 
-
     /**
      * Gives the header the row width to avoid scalebar adjustment nonsense
      * @memberof RegionsList
      */
     setHeaderWidth() {
         $('.regions-header').width($('.regions-table-first-row').width());
+    }
+
+    // FASt-Mal: update the ROI counts
+    updateRoiCounts() {
         let counts = FastMal.getRoiTypeCounts(this.regions_info);
         let html_out = "White cells = " + counts[0] + "; parasites = " + counts[1];
         $('.fastmal-summary').html(html_out);

@@ -31,7 +31,7 @@ import {
 } from '../events/events';
 import {inject, customElement, bindable, BindingEngine} from 'aurelia-framework';
 import {spectrum} from 'spectrum-colorpicker';
-import {FastMal} from '../fastmal/regions.js';
+import {FastMal, FASTMAL_COMMENT_UPDATE} from '../fastmal/regions.js';
 
 /**
  * Represents the regions section in the right hand panel
@@ -68,7 +68,7 @@ export default class RegionsEdit extends EventSubscriber {
      * @type {Array.<string,function>}
      */
     sub_list = [[IMAGE_DIMENSION_CHANGE, () => this.adjustEditWidgets()],
-                ["FASTMAL_COMMENT_UPDATE", (params={}) => this.onCommentChange(params.comment, params.shape)]
+                [FASTMAL_COMMENT_UPDATE, (params={}) => this.onCommentChange(params.comment, params.shape)]
                ];
 
     /**
@@ -304,13 +304,6 @@ export default class RegionsEdit extends EventSubscriber {
      * @memberof RegionsEdit
      */
     onCommentChange(comment = '',shape=null) {
-        /*** FASt-Mal */
-        console.log('./regions/regions-edit.onCommentChange(); comment =');
-        console.log(comment);
-        console.log('shape =');
-        console.log(shape);
-        /*** /FASt-Mal */
-
         if (typeof shape !== 'object' || shape === null ||
             typeof comment !== 'string') return;
 

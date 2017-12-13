@@ -28,6 +28,7 @@ import {
     REGIONS_DRAW_SHAPE, REGIONS_SHAPE_GENERATED,
     REGIONS_GENERATE_SHAPES, REGIONS_CHANGE_MODES, EventSubscriber
 } from '../events/events';
+import {FastMal, FASTMAL_DESELECTED, FASTMAL_SELECTED, FASTMAL_COMMENT_UPDATE} from '../fastmal/regions.js';
 
 /**
  * Represents the regions drawing palette in the right hand panel
@@ -72,9 +73,9 @@ export default class RegionsDrawing extends EventSubscriber {
             (params={}) => this.onShapeDrawn(params)],
         [REGIONS_CHANGE_MODES,
             (params={}) => this.onModeChange(params)],
-        ["FASTMAL_DESELECTED",
+        [FASTMAL_DESELECTED,
             (params={}) => this.onDrawShape(-1)],
-        ["FASTMAL_SELECTED",
+        [FASTMAL_SELECTED,
             (params={}) => this.onDrawShape(params.shape_id)]
        ];
 
@@ -167,11 +168,6 @@ export default class RegionsDrawing extends EventSubscriber {
      * @param {Object} params the event notification parameters
      */
     onShapeDrawn(params={}) {
-        /*** FASt-Mal */
-        console.log('./regions/regions-drawing.onShapeDrawn(); params = ');
-        console.log(params);
-        /*** /FASt-Mal */
-
         // if the event is for another config, forget it...
         if (params.config_id !== this.regions_info.image_info.config_id) return;
 
@@ -217,10 +213,6 @@ export default class RegionsDrawing extends EventSubscriber {
                         newShape.deleted = false;
                         newShape.modified = true;
 
-                        /*** FASt-Mal */
-                        newShape.Text = this.regions_info.shape_defaults['Text'];
-                        /*** /FASt-Mal */
-
                         // create deep copy
                         let genShape = Object.assign({}, newShape);
                         if (add) {
@@ -245,16 +237,14 @@ export default class RegionsDrawing extends EventSubscriber {
         // we update the overall number of shapes
         this.regions_info.number_of_shapes += len;
 
-        /*** FASt-Mal */
+        // FASt-Mal: Simulated a shape select and comment change
         this.regions_info.selected_shapes = [generatedShapes[len-1].oldId];
         this.context.publish(
-            "FASTMAL_COMMENT_UPDATE",
+            FASTMAL_COMMENT_UPDATE,
             {
                 comment: this.regions_info.shape_defaults['Text'],
                 shape: generatedShapes[len-1]
             });
-        /*** /FASt-Mal */
-
 
         // we only continue if we have been drawn and intend to propagate
         if (params.drawn)
@@ -397,5 +387,4 @@ export default class RegionsDrawing extends EventSubscriber {
         this.unsubscribe();
         this.unregisterObservers();
     }
-
 }
