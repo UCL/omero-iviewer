@@ -16,7 +16,7 @@ export default class FastMal {
     context = null;
 
     constructor(context) {
-        console.log('instantiated fastmal');
+        console.log('Instantiated FastMal');
         this.context = context;
     }
 
@@ -72,8 +72,6 @@ export default class FastMal {
      */
     getRegionsInfo() {
         let image_config = this.context.getSelectedImageConfig();
-        console.log(image_config.image_info);
-        //console.log(image_config.regions_info);
         return image_config.regions_info;
     }
 
@@ -104,13 +102,14 @@ export default class FastMal {
         return true;
     }
 
+    datasetRoiCounts = null;
+
     getDatasetRoiCounts(dataset_id, server) {
-        console.log('getdatasetroicounts');
         $.ajax({
-            url : 'http://localhost:5050/iviewer/fastmal_data/' + dataset_id + '/',
+            url : '/iviewer/fastmal_data/' + dataset_id + '/',
             success : (response) => {
                 try {
-                    console.log(response);
+                    this.datasetRoiCounts = response;
                 } catch(err) {
                     console.error("Failed to load Rois: " + err);
                 }

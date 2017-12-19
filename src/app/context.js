@@ -278,7 +278,6 @@ export default class Context {
      * @memberof Context
      */
     openWithInitialParams() {
-        console.log('in openwithinitialparams');
         // do we have any image ids?
         let initial_image_ids =
             typeof this.initParams[REQUEST_PARAMS.IMAGES] !== 'undefined' ?
@@ -313,9 +312,7 @@ export default class Context {
                     initial_dataset_id !== null ?
                         INITIAL_TYPES.DATASET : INITIAL_TYPES.WELL : null;
             this.addImageConfig(this.initial_ids[0], parent_id, parent_type);
-            console.log('load image here');
         } else {
-            console.log('load dataset info here');
             // we could either have a well or just a dataset
             if (initial_well_id) { // well takes precedence
                 this.initial_type = INITIAL_TYPES.WELL;
@@ -577,7 +574,6 @@ export default class Context {
      * @return {ImageConfig} an ImageConfig object
      */
     addImageConfig(image_id, parent_id, parent_type) {
-        console.log('in addimageconfig');
         if (typeof image_id !== 'number' || image_id < 0)
             return null;
 

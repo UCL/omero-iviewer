@@ -231,7 +231,6 @@ export default class RegionsList extends EventSubscriber {
 
     // FASt-Mal: update the ROI counts
     updateRoiCounts() {
-        this.context.fastMal.getDatasetRoiCounts(1);
         $('.fastmal-summary').html(this.context.fastMal.getRoiTypeCountsHTML(this.regions_info));
     }
 
