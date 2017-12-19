@@ -31,7 +31,7 @@ import {
 } from '../events/events';
 import {inject, customElement, bindable, BindingEngine} from 'aurelia-framework';
 import {spectrum} from 'spectrum-colorpicker';
-import FastMal from '../fastmal/fastmal';
+
 import {FASTMAL_COMMENT_UPDATE} from '../fastmal/fastmal';
 
 /**
@@ -39,7 +39,7 @@ import {FASTMAL_COMMENT_UPDATE} from '../fastmal/fastmal';
  * @extends {EventSubscriber}
  */
 @customElement('regions-edit')
-@inject(Context, Element, BindingEngine, FastMal)
+@inject(Context, Element, BindingEngine)
 export default class RegionsEdit extends EventSubscriber {
     /**
      * a bound reference to regions_info
@@ -98,13 +98,12 @@ export default class RegionsEdit extends EventSubscriber {
      * @param {Element} element the associated dom element (injected)
      * @param {BindingEngine} bindingEngine the BindingEngine (injected)
      */
-    constructor(context, element, bindingEngine, fastMal) {
+    constructor(context, element, bindingEngine) {
         super(context.eventbus);
         this.context = context;
         this.element = element;
         this.bindingEngine = bindingEngine;
-        this.fastMal = fastMal;
-        this.fastmal_roi_types = this.fastMal.getRoiTypes();
+        this.fastmal_roi_types = this.context.fastMal.getRoiTypes();
     }
 
 
@@ -957,6 +956,6 @@ export default class RegionsEdit extends EventSubscriber {
     fastmal_selected_roi_type = 0;
     // Fired when ROI type radio button clicked
     fastmalRoiClick(event_in) {
-        return this.fastMal.roiTypeSelected(event_in, this);
+        return this.context.fastMal.roiTypeSelected(event_in, this);
     }
 }

@@ -481,6 +481,7 @@ export default class ThumbnailSlider extends EventSubscriber {
      * @memberof ThumbnailSlider
      */
     addThumbnails(thumbnails, append = true, skip_decrement = false) {
+        console.log('in addthumbnails');
         // if we are remote we include the server
         let thumbPrefix =
             (this.context.server !== "" ? this.context.server + "/" : "") +
@@ -495,12 +496,16 @@ export default class ThumbnailSlider extends EventSubscriber {
                 title: typeof item.Name === 'string' ? item.Name : id,
                 revision : 0
             }
-            if (append) {
-                this.thumbnails.push(entry);
-                this.thumbnails_end_index++;
-            } else {
-                this.thumbnails.unshift(entry);
-                if (!skip_decrement) this.thumbnails_start_index--;
+
+            // FASt-Mal check whether we should display this image to annotate
+            if ([9, 1, 5, 7, 6].indexOf(id) >= 0) {
+                if (append) {
+                    this.thumbnails.push(entry);
+                    this.thumbnails_end_index++;
+                } else {
+                    this.thumbnails.unshift(entry);
+                    if (!skip_decrement) this.thumbnails_start_index--;
+                }
             }
         });
     }

@@ -1,23 +1,22 @@
 /**
- * FASt-Mal modifications to omero-iviewer code. 
+ * FASt-Mal modifications to omero-iviewer code.
  *
  * Usage of these methods are peppered throughout the omero-iviewer code
  */
 
-import {inject, noView, bindable} from 'aurelia-framework';
 import {Converters} from '../utils/converters';
-import Context from '../app/context';
 
 // Constants for publish/subscribe events
 export const FASTMAL_DESELECTED = "FASTMAL_DESELECTED";
 export const FASTMAL_SELECTED = "FASTMAL_SELECTED";
 export const FASTMAL_COMMENT_UPDATE = "FASTMAL_COMMENT_UPDATE";
 
-@noView
-@inject(Context)
 export default class FastMal {
 
+    context = null;
+
     constructor(context) {
+        console.log('instantiated fastmal');
         this.context = context;
     }
 
@@ -54,7 +53,7 @@ export default class FastMal {
     }
 
     /**
-     * Called by regions-list.js when ROI list changes. 
+     * Called by regions-list.js when ROI list changes.
      */
     getRoiTypeCountsHTML(regions_info) {
         let counts = this.getRoiTypeCounts(regions_info);
@@ -73,7 +72,7 @@ export default class FastMal {
      */
     getRegionsInfo() {
         let image_config = this.context.getSelectedImageConfig();
-        //console.log(image_config.image_info);
+        console.log(image_config.image_info);
         //console.log(image_config.regions_info);
         return image_config.regions_info;
     }
@@ -104,4 +103,21 @@ export default class FastMal {
         this.context.publish(FASTMAL_SELECTED, {shape_id: 0});
         return true;
     }
+
+    getDatasetRoiCounts(dataset_id, server) {
+        console.log('getdatasetroicounts');
+        $.ajax({
+            url : 'http://localhost:5050/iviewer/fastmal_data/' + dataset_id + '/',
+            success : (response) => {
+                try {
+                    console.log(response);
+                } catch(err) {
+                    console.error("Failed to load Rois: " + err);
+                }
+            }, error : (error) => {
+                console.error("Failed to load Rois: " + error)
+            }
+        });
+    }
 }
+
