@@ -37,6 +37,10 @@ import omero.util.pixelstypetopython as pixelstypetopython
 
 from version import __version__
 
+# FASt-Mal imports:
+from omero.gateway import _ImageWrapper, TagAnnotationWrapper
+from collections import defaultdict
+
 
 WEB_API_VERSION = 0
 
@@ -206,6 +210,54 @@ def persist_rois(request, conn=None, **kwargs):
                             'error': repr(marshalOrPersistenceException)})
 
     return JsonResponse({"ids": ret_ids})
+
+
+@login_required()
+def fastmal_data(request, dataset_id, conn=None, **kwargs):
+    dataset = conn.getObject("Dataset", dataset_id)
+
+    if dataset is None:
+        return JsonResponse({"error": "Dataset not found"}, status=404)
+
+    try:
+        rois_service = conn.getRoiService()
+        dataset_roi_counts = defaultdict(int)
+
+        # get all images in dataset
+        images = (i for i in dataset.listChildren() if isinstance(i, _ImageWrapper))
+
+        annotate_images = list()
+        
+        # for each image in dataset
+        for image in images:
+            # get the tag annotations for this image
+            annotations = [a.getValue() for a in image.listAnnotations() if isinstance(a, TagAnnotationWrapper)]
+
+            # if this is an image we want to annotate
+            if 'ANNOTATE' in annotations:
+                annotate_images.append(image.getId())
+
+                # get rois for this image
+                rois = rois_service.findByImage(image.getId(), None, conn.SERVICE_OPTS).rois
+                for roi in rois:
+                    roi_type = roi.getPrimaryShape().getTextValue()
+                    if roi_type is not None:
+                        dataset_roi_counts[roi_type.getValue()] += 1
+
+        response = { 'image_ids': annotate_images,
+                'roi_type_count': dataset_roi_counts }
+
+        return JsonResponse(response)
+    except Exception as dataset_rois_exception:
+        return JsonResponse({'error': repr(dataset_rois_exception)})
+    # use queryservice to get images
+    # e.g.
+    # qs = conn.getQueryService()
+    # records = qs.findAllByQuery('select obj from Roi obj left outer join fetch obj.shapes where obj.image.id = 9')
+    # roi1 = records[0]
+    # roi1.getPrimaryShape().getTextValue().getValue()
+    # or
+    # out = qs.findAllByQuery('select obj from Shape obj where obj.image.id in (:ids)')
 
 
 @login_required()

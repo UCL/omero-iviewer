@@ -36,4 +36,6 @@ urlpatterns = patterns(
     url(r'^get_intensity/?$', views.get_intensity,
         name='omero_iviewer_get_intensity'),
     url(r'^shape_stats/?$', views.shape_stats,
-        name='omero_iviewer_shape_stats'))
+        name='omero_iviewer_shape_stats'),
+    url(r'^fastmal_data/(?P<dataset_id>[0-9]+)/$', views.fastmal_data,
+        name='omero_iviewer_fastmal_data'))
