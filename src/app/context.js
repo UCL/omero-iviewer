@@ -298,6 +298,18 @@ export default class Context {
             parseInt(this.getInitialRequestParam(REQUEST_PARAMS.DATASET_ID));
         if (typeof initial_dataset_id !== 'number' || isNaN(initial_dataset_id))
             initial_dataset_id = null;
+
+        // FASt-Mal only works at the dataset level
+        if (initial_dataset_id == null) {
+            return;
+        } else {
+            this.fastMal.getDatasetRoiCounts(initial_dataset_id);
+            if ('error' in this.fastMal.datasetRoiCounts ||
+                this.fastMal.datasetRoiCounts['image_ids'].length == 0) {
+                return;
+            }
+        }
+
         // do we have a well id
         let initial_well_id =
             parseInt(this.getInitialRequestParam(REQUEST_PARAMS.WELL_ID));
@@ -320,7 +332,6 @@ export default class Context {
             } else if (initial_dataset_id) {
                 this.initial_type = INITIAL_TYPES.DATASET;
                 this.initial_ids.push(initial_dataset_id);
-                this.fastMal.getDatasetRoiCounts(initial_dataset_id);
             }
         }
     }

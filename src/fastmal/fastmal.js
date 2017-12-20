@@ -10,6 +10,7 @@ import {Converters} from '../utils/converters';
 export const FASTMAL_DESELECTED = "FASTMAL_DESELECTED";
 export const FASTMAL_SELECTED = "FASTMAL_SELECTED";
 export const FASTMAL_COMMENT_UPDATE = "FASTMAL_COMMENT_UPDATE";
+export const FASTMAL_COUNT_UPDATE = "FASTMAL_COUNT_UPDATE";
 
 export default class FastMal {
 
@@ -27,6 +28,14 @@ export default class FastMal {
             { id: 2, name: 'Parasite', code: 'FASTMAL:PARASITE', description: '', colour:  "252,141,98"},
             { id: 3, name: 'Background', code: 'FASTMAL:BACKGROUND', description: '', colour: "141,160,203"},
             { id: 4, name: 'Ignore', code: 'FASTMAL:IGNORE', description: '', colour: "231,138,195" },
+        ];
+    }
+
+    static get THIN_FILM_ROI_TYPES() {
+        return [
+            { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!', description: 'No shape - only select', colour: "0,0,0"},
+            { id: 1, name: 'Interesting', code: 'FASTMAL:INTERESTING', description: '', colour: "102,194,165" },
+            { id: 2, name: 'Not interesting', code: 'FASTMAL:NOT INTERESTING', description: '', colour:  "252,141,98"},
         ];
     }
 
@@ -59,10 +68,12 @@ export default class FastMal {
         let counts = this.getRoiTypeCounts(regions_info);
         let roi_types = this.getRoiTypes();
         let html = "";
-        let total;
+        let total, grandTotal;
+        let datasetCounts = this.datasetRoiCounts['roi_type_count'];
         for (let i = 1; i < roi_types.length; i++) {
             total = counts[roi_types[i].code] ? counts[roi_types[i].code] : 0;
-            html += roi_types[i].name + " = " + total + "; ";
+            grandTotal = datasetCounts[roi_types[i].code] ? datasetCounts[roi_types[i].code] : 0;
+            html += roi_types[i].name + " = " + total + "/" + grandTotal + "; ";
         }
         return html;
     }
@@ -78,7 +89,7 @@ export default class FastMal {
     /**
      * Triggered by regions-edit.js when user clicks on 'Select ROI' list
      */
-    roiTypeSelected(event_in, regions_edit_instance) {
+    roiTypeSelected(event_in) {
         let regions_info = this.getRegionsInfo()
         let type_id = event_in.target.model;
         let roi_types = this.getRoiTypes();
@@ -96,25 +107,39 @@ export default class FastMal {
 
         let rgb_string = 'rgb(' + roi_types[type_id].colour + ')';
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
-        regions_edit_instance.setDrawColors(rgb_string, false);
 
         this.context.publish(FASTMAL_SELECTED, {shape_id: 0});
         return true;
     }
 
     datasetRoiCounts = null;
+    refreshRoiCount = 0;
 
-    getDatasetRoiCounts(dataset_id, server) {
+    /**
+     * Retrieves ROI and tag information about a dataset and stores it
+     * in instance variable
+     */
+    getDatasetRoiCounts(dataset_id=null) {
+        if (dataset_id == null) {
+            dataset_id = this.datasetRoiCounts['dataset_id'];
+        }
+
         $.ajax({
             url : '/iviewer/fastmal_data/' + dataset_id + '/',
+            async : false,
             success : (response) => {
                 try {
                     this.datasetRoiCounts = response;
+                    this.datasetRoiCounts['dataset_id'] = dataset_id;
+                    this.refreshRoiCount++;
+                    console.log(this.datasetRoiCounts);
                 } catch(err) {
-                    console.error("Failed to load Rois: " + err);
+                    console.error("Failed to load Rois: ");
+                    this.datasetRoiCounts = err.responseJSON;
                 }
             }, error : (error) => {
-                console.error("Failed to load Rois: " + error)
+                console.error("Failed to load Rois: ")
+                this.datasetRoiCounts = error.responseJSON;
             }
         });
     }

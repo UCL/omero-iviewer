@@ -956,6 +956,6 @@ export default class RegionsEdit extends EventSubscriber {
     fastmal_selected_roi_type = 0;
     // Fired when ROI type radio button clicked
     fastmalRoiClick(event_in) {
-        return this.context.fastMal.roiTypeSelected(event_in, this);
+        return this.context.fastMal.roiTypeSelected(event_in);
     }
 }

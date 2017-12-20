@@ -163,6 +163,12 @@ export default class RegionsList extends EventSubscriber {
                 this.regions_info, 'number_of_shapes').subscribe(
                     (newValue, oldValue) =>
                         setTimeout(() => this.updateRoiCounts(), 50)));
+
+        this.observers.push(
+            this.bindingEngine.propertyObserver(
+                this.context.fastMal, 'refreshRoiCount').subscribe(
+                    (newValue, oldValue) =>
+                        setTimeout(() => this.updateRoiCounts(), 50)));
     }
 
     /**

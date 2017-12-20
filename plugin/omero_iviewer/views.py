@@ -41,6 +41,9 @@ from version import __version__
 from omero.gateway import _ImageWrapper, TagAnnotationWrapper
 from collections import defaultdict
 
+FASTMAL_DATASET_ANNOTATE_TAG = 'ANNOTATE'
+FASTMAL_IMAGE_ANNOTATE_TAG = 'ANNOTATE'
+
 
 WEB_API_VERSION = 0
 
@@ -219,6 +222,11 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
     if dataset is None:
         return JsonResponse({"error": "Dataset not found"}, status=404)
 
+    # we do not annotate datasets if they do not have the 'ANNOTATE' tag
+    dataset_tags = [a.getValue() for a in dataset.listAnnotations() if isinstance(a, TagAnnotationWrapper)]
+    if FASTMAL_DATASET_ANNOTATE_TAG not in dataset_tags:
+        return JsonResponse({"error": "Dataset does not have 'annotate' flag"}, status=500)
+
     try:
         rois_service = conn.getRoiService()
         dataset_roi_counts = defaultdict(int)
@@ -227,14 +235,14 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
         images = (i for i in dataset.listChildren() if isinstance(i, _ImageWrapper))
 
         annotate_images = list()
-        
+
         # for each image in dataset
         for image in images:
             # get the tag annotations for this image
             annotations = [a.getValue() for a in image.listAnnotations() if isinstance(a, TagAnnotationWrapper)]
 
             # if this is an image we want to annotate
-            if 'ANNOTATE' in annotations:
+            if FASTMAL_IMAGE_ANNOTATE_TAG in annotations:
                 annotate_images.append(image.getId())
 
                 # get rois for this image
