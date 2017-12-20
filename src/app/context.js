@@ -303,7 +303,7 @@ export default class Context {
         if (initial_dataset_id == null) {
             return;
         } else {
-            this.fastMal.refreshDatasetRoiCounts(initial_dataset_id);
+            this.fastMal.refreshDatasetRoiCounts(initial_dataset_id, false);
             if ('error' in this.fastMal.datasetRoiCounts ||
                 this.fastMal.datasetRoiCounts['image_ids'].length == 0) {
                 return;

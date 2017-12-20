@@ -24,6 +24,7 @@ import {inject, customElement, bindable, BindingEngine} from 'aurelia-framework'
 import {
     REGIONS_SET_PROPERTY, IMAGE_VIEWER_RESIZE, EventSubscriber
 } from '../events/events';
+import { FASTMAL_COUNT_UPDATE } from '../fastmal/fastmal'
 
 
 /**
@@ -71,7 +72,9 @@ export default class RegionsList extends EventSubscriber {
      * @type {Array.<string,function>}
      */
     sub_list = [[IMAGE_VIEWER_RESIZE,
-                    (params={}) => setTimeout(() => this.setHeaderWidth(), 50)]];
+                    (params={}) => setTimeout(() => this.setHeaderWidth(), 50)],
+                [FASTMAL_COUNT_UPDATE,
+                    (params={}) => setTimeout(() => this.updateRoiCounts(), 50)]];
 
     /**
      * @constructor
@@ -161,12 +164,6 @@ export default class RegionsList extends EventSubscriber {
         this.observers.push(
             this.bindingEngine.propertyObserver(
                 this.regions_info, 'number_of_shapes').subscribe(
-                    (newValue, oldValue) =>
-                        setTimeout(() => this.updateRoiCounts(), 50)));
-
-        this.observers.push(
-            this.bindingEngine.propertyObserver(
-                this.context.fastMal, 'refreshRoiCount').subscribe(
                     (newValue, oldValue) =>
                         setTimeout(() => this.updateRoiCounts(), 50)));
     }

@@ -545,7 +545,7 @@ export default class ThumbnailSlider extends EventSubscriber {
                         this.image_config.image_info.parent_type :
                         this.context.initial_type;
             this.context.addImageConfig(image_id, parent_id, parent_type);
-            this.context.fastMal.refreshDatasetRoiCounts();
+            this.context.fastMal.refreshDatasetRoiCounts(null, true);
         };
 
         // pop up dialog to ask whether user wants to store rois changes

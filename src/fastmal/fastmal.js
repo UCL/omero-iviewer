@@ -112,27 +112,29 @@ export default class FastMal {
         return true;
     }
 
+    /**
+     * Holds the ROI information about a given dataset
+     */
     datasetRoiCounts = null;
-    refreshRoiCount = 0;
 
     /**
      * Retrieves ROI and tag information about a dataset and stores it
      * in instance variable
      */
-    refreshDatasetRoiCounts(dataset_id=null) {
+    refreshDatasetRoiCounts(dataset_id, async=true) {
+        console.log('dataset_id= ' + dataset_id + '; async='+async);
         if (dataset_id == null) {
             dataset_id = this.datasetRoiCounts['dataset_id'];
         }
 
         $.ajax({
             url : '/iviewer/fastmal_data/' + dataset_id + '/',
-            async : false,
+            async : async, // appara
             success : (response) => {
                 try {
                     this.datasetRoiCounts = response;
                     this.datasetRoiCounts['dataset_id'] = dataset_id;
-                    this.refreshRoiCount++;
-                    console.log(this.datasetRoiCounts);
+                    this.context.publish(FASTMAL_COUNT_UPDATE, {});
                 } catch(err) {
                     console.error("Failed to load Rois: ");
                     this.datasetRoiCounts = err.responseJSON;
