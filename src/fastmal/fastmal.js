@@ -119,7 +119,7 @@ export default class FastMal {
      * Retrieves ROI and tag information about a dataset and stores it
      * in instance variable
      */
-    getDatasetRoiCounts(dataset_id=null) {
+    refreshDatasetRoiCounts(dataset_id=null) {
         if (dataset_id == null) {
             dataset_id = this.datasetRoiCounts['dataset_id'];
         }
