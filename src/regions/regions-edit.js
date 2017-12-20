@@ -103,7 +103,6 @@ export default class RegionsEdit extends EventSubscriber {
         this.context = context;
         this.element = element;
         this.bindingEngine = bindingEngine;
-        this.fastmal_roi_types = this.context.fastMal.getRoiTypes();
     }
 
 
@@ -139,7 +138,7 @@ export default class RegionsEdit extends EventSubscriber {
         if (this.regions_info === null) return;
 
         // FASt-Mal: reset default selection for ROI type (0 = "off")
-        this.fastmal_selected_roi_type = 0;
+        this.context.fastMal.fastmal_selected_roi_type = 0;
 
         let onceReady = () => {
             // register observer
@@ -947,15 +946,5 @@ export default class RegionsEdit extends EventSubscriber {
      */
     deleteShapes() {
         this.regions_info.deleteShapes();
-    }
-
-    // FASt-Mal
-    // The available ROI types for this image
-    fastmal_roi_types = null;
-    // The currently selected ROI type
-    fastmal_selected_roi_type = 0;
-    // Fired when ROI type radio button clicked
-    fastmalRoiClick(event_in) {
-        return this.context.fastMal.roiTypeSelected(event_in);
     }
 }

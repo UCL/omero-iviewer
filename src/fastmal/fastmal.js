@@ -17,8 +17,9 @@ export default class FastMal {
     context = null;
 
     constructor(context) {
-        console.log('Instantiated FastMal');
         this.context = context;
+        this.fastmal_roi_types = this.getRoiTypes();
+        console.log('Instantiated FastMal');
     }
 
     static get THICK_FILM_ROI_TYPES() {
@@ -86,12 +87,19 @@ export default class FastMal {
         return image_config.regions_info;
     }
 
+
     /**
      * Triggered by regions-edit.js when user clicks on 'Select ROI' list
      */
-    roiTypeSelected(event_in) {
+    fastmalRoiClick(event_in) {
+        return this.roiTypeSelected(event_in.target.model);
+    }
+
+    /**
+     * Set regions drawing default for a given type
+     */
+    roiTypeSelected(type_id) {
         let regions_info = this.getRegionsInfo()
-        let type_id = event_in.target.model;
         let roi_types = this.getRoiTypes();
 
         // If we're turning off ROI shapes (i.e. select mode)
@@ -111,6 +119,12 @@ export default class FastMal {
         this.context.publish(FASTMAL_SELECTED, {shape_id: 0});
         return true;
     }
+
+    /**
+     * Used by regions-edit.html to bind the currently selected type
+     */
+    fastmal_selected_roi_type = 0;
+    fastmal_roi_types = null;
 
     /**
      * Holds the ROI information about a given dataset
