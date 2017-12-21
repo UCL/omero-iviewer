@@ -194,7 +194,9 @@ export default class ThumbnailSlider extends EventSubscriber {
             this.hideMe();
             setTimeout(() =>
                 UI.showModalMessage(
-                    'Viewer opened without image, dataset or well id!','OK'),
+                    // 'Viewer opened without image, dataset or well id!','OK'),
+                    // FASt-Mal message:
+                    'No images to annotate in this dataset!','OK'),
             100);
             return;
         }
