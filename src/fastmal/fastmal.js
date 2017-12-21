@@ -141,7 +141,6 @@ export default class FastMal {
      * in instance variable
      */
     refreshDatasetRoiCounts(dataset_id, async=true) {
-        console.log('dataset_id= ' + dataset_id + '; async='+async);
         if (dataset_id == null) {
             dataset_id = this.datasetRoiCounts['dataset_id'];
         }
