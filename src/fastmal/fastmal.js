@@ -1,7 +1,7 @@
 /**
  * FASt-Mal modifications to omero-iviewer code.
  *
- * Usage of these methods are peppered throughout the omero-iviewer code
+ * Usage is peppered throughout the omero-iviewer code
  */
 
 import {Converters} from '../utils/converters';
@@ -14,13 +14,19 @@ export const FASTMAL_COUNT_UPDATE = "FASTMAL_COUNT_UPDATE";
 
 export default class FastMal {
 
+    // Reference to global iviewer context
     context = null;
 
-    constructor(context) {
-        this.context = context;
-        this.fastmal_roi_types = this.getRoiTypes();
-        console.log('Instantiated FastMal');
-    }
+    /**
+     * Used by regions-edit.html to bind the currently selected type
+     */
+    fastmal_selected_roi_type = 0;
+    fastmal_roi_types = null;
+
+    /**
+     * Holds the ROI information about a given dataset
+     */
+    datasetRoiCounts = null;
 
     static get THICK_FILM_ROI_TYPES() {
         return [
@@ -40,6 +46,16 @@ export default class FastMal {
         ];
     }
 
+
+    constructor(context) {
+        this.context = context;
+        this.fastmal_roi_types = this.getRoiTypes();
+        console.log('Instantiated FastMal');
+    }
+
+    /**
+     * Returns the ROI types valid for this type of image
+     */
     getRoiTypes() {
         // TODO: return either thick film or think film ROI types based on the dataset type
         return FastMal.THICK_FILM_ROI_TYPES;
@@ -69,6 +85,7 @@ export default class FastMal {
         let counts = this.getRoiTypeCounts(regions_info);
         let roi_types = this.getRoiTypes();
         let html = "";
+        // total = ROI type counts for image; grandTotal = ROI type counts for dataset
         let total, grandTotal;
         let datasetCounts = this.datasetRoiCounts['roi_type_count'];
         for (let i = 1; i < roi_types.length; i++) {
@@ -80,13 +97,12 @@ export default class FastMal {
     }
 
     /**
-     * Get active regions_info via the Context (testing...)
+     * Get active regions_info via the Contex
      */
     getRegionsInfo() {
         let image_config = this.context.getSelectedImageConfig();
         return image_config.regions_info;
     }
-
 
     /**
      * Triggered by regions-edit.js when user clicks on 'Select ROI' list
@@ -106,7 +122,7 @@ export default class FastMal {
         if (type_id == 0) {
             regions_info.shape_defaults.Text = '';
             regions_info.shape_to_be_drawn = null;
-            this.context.publish(FASTMAL_DESELECTED, {});
+            this.context.publish(FASTMAL_DESELECTED, {}); // fires regions-drawing.onDrawShape()
             return true;
         }
 
@@ -116,20 +132,9 @@ export default class FastMal {
         let rgb_string = 'rgb(' + roi_types[type_id].colour + ')';
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
 
-        this.context.publish(FASTMAL_SELECTED, {shape_id: 0});
+        this.context.publish(FASTMAL_SELECTED, {shape_id: 0}); // fires regions-drawing.onDrawShape()
         return true;
     }
-
-    /**
-     * Used by regions-edit.html to bind the currently selected type
-     */
-    fastmal_selected_roi_type = 0;
-    fastmal_roi_types = null;
-
-    /**
-     * Holds the ROI information about a given dataset
-     */
-    datasetRoiCounts = null;
 
     /**
      * Retrieves ROI and tag information about a dataset and stores it
@@ -142,13 +147,15 @@ export default class FastMal {
         }
 
         $.ajax({
-            url : '/iviewer/fastmal_data/' + dataset_id + '/',
+            // this.context.getPrefixedURI(IVIEWER) is not ready...?
+            url : this.context.server +
+                '/iviewer/fastmal_data/' + dataset_id + '/',
             async : async, // appara
             success : (response) => {
                 try {
                     this.datasetRoiCounts = response;
                     this.datasetRoiCounts['dataset_id'] = dataset_id;
-                    this.context.publish(FASTMAL_COUNT_UPDATE, {});
+                    this.context.publish(FASTMAL_COUNT_UPDATE, {}); // fires regions-list.updateRoiCounts()
                 } catch(err) {
                     console.error("Failed to load Rois: ");
                     this.datasetRoiCounts = err.responseJSON;
