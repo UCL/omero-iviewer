@@ -38,6 +38,7 @@ import omero.util.pixelstypetopython as pixelstypetopython
 from version import __version__
 
 # FASt-Mal imports:
+import timeit
 from omero.gateway import _ImageWrapper, TagAnnotationWrapper
 from collections import defaultdict
 
@@ -217,6 +218,8 @@ def persist_rois(request, conn=None, **kwargs):
 
 @login_required()
 def fastmal_data(request, dataset_id, conn=None, **kwargs):
+    start_time = timeit.default_timer()
+
     dataset = conn.getObject("Dataset", dataset_id)
 
     if dataset is None:
@@ -228,44 +231,39 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
         return JsonResponse({"error": "Dataset does not have 'annotate' flag"}, status=500)
 
     try:
-        rois_service = conn.getRoiService()
-        dataset_roi_counts = defaultdict(int)
+        # get all annotable images in dataset
+        qs = conn.getQueryService()
+        roiable_in_dataset = qs.projection("""select ial.parent 
+                from ImageAnnotationLink as ial 
+                    inner join ial.child as annotation 
+                where annotation.textValue = '%s' 
+                and ial.parent in (
+                    select child.id from DatasetImageLink where parent = %d
+                )""" % (FASTMAL_IMAGE_ANNOTATE_TAG, int(dataset_id)), None)
+        roiable_in_dataset = (r[0].getValue().id.getValue() for r in roiable_in_dataset)
+        annotate_images = list(roiable_in_dataset)
 
-        # get all images in dataset
-        images = (i for i in dataset.listChildren() if isinstance(i, _ImageWrapper))
+        # get the summary ROI type counts across the dataset
+        dataset_totals = qs.projection("""select textValue, count(textValue) 
+                from Shape where roi in (
+                    from Roi where image in (
+                        from Image where id in (
+                            select child.id from DatasetImageLink where parent = %d
+                        )
+                    )
+                ) group by textValue""" % int(dataset_id), None)
 
-        annotate_images = list()
+        dataset_totals = { d[0].getValue(): d[1].getValue() for d in dataset_totals}
 
-        # for each image in dataset
-        for image in images:
-            # get the tag annotations for this image
-            annotations = [a.getValue() for a in image.listAnnotations() if isinstance(a, TagAnnotationWrapper)]
-
-            # if this is an image we want to annotate
-            if FASTMAL_IMAGE_ANNOTATE_TAG in annotations:
-                annotate_images.append(image.getId())
-
-                # get rois for this image
-                rois = rois_service.findByImage(image.getId(), None, conn.SERVICE_OPTS).rois
-                for roi in rois:
-                    roi_type = roi.getPrimaryShape().getTextValue()
-                    if roi_type is not None:
-                        dataset_roi_counts[roi_type.getValue()] += 1
+        elapsed = timeit.default_timer() - start_time
 
         response = { 'image_ids': annotate_images,
-                'roi_type_count': dataset_roi_counts }
+                'roi_type_count': dataset_totals,
+                'execution_time': elapsed}
 
         return JsonResponse(response)
     except Exception as dataset_rois_exception:
         return JsonResponse({'error': repr(dataset_rois_exception)})
-    # use queryservice to get images
-    # e.g.
-    # qs = conn.getQueryService()
-    # records = qs.findAllByQuery('select obj from Roi obj left outer join fetch obj.shapes where obj.image.id = 9')
-    # roi1 = records[0]
-    # roi1.getPrimaryShape().getTextValue().getValue()
-    # or
-    # out = qs.findAllByQuery('select obj from Shape obj where obj.image.id in (:ids)')
 
 
 @login_required()

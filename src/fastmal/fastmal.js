@@ -30,19 +30,27 @@ export default class FastMal {
 
     static get THICK_FILM_ROI_TYPES() {
         return [
-            { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!', description: 'No shape - only select', colour: "0,0,0"},
-            { id: 1, name: 'White cell', code: 'FASTMAL:WHITE_CELL', description: '', colour: "102,194,165" },
-            { id: 2, name: 'Parasite', code: 'FASTMAL:PARASITE', description: '', colour:  "252,141,98"},
-            { id: 3, name: 'Background', code: 'FASTMAL:BACKGROUND', description: '', colour: "141,160,203"},
-            { id: 4, name: 'Ignore', code: 'FASTMAL:IGNORE', description: '', colour: "231,138,195" },
+            { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!',
+                description: 'No shape - only select', colour: "0,0,0"},
+            { id: 1, name: 'White cell', code: 'FASTMAL:WHITE_CELL',
+                description: '', colour: "102,194,165" },
+            { id: 2, name: 'Parasite', code: 'FASTMAL:PARASITE',
+                description: '', colour:  "252,141,98"},
+            { id: 3, name: 'Background', code: 'FASTMAL:BACKGROUND',
+                description: '', colour: "141,160,203"},
+            { id: 4, name: 'Ignore', code: 'FASTMAL:IGNORE',
+                description: '', colour: "231,138,195" },
         ];
     }
 
     static get THIN_FILM_ROI_TYPES() {
         return [
-            { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!', description: 'No shape - only select', colour: "0,0,0"},
-            { id: 1, name: 'Interesting', code: 'FASTMAL:INTERESTING', description: '', colour: "102,194,165" },
-            { id: 2, name: 'Not interesting', code: 'FASTMAL:NOT INTERESTING', description: '', colour:  "252,141,98"},
+            { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!',
+                description: 'No shape - only select', colour: "0,0,0"},
+            { id: 1, name: 'Interesting', code: 'FASTMAL:INTERESTING',
+                description: '', colour: "102,194,165" },
+            { id: 2, name: 'Not interesting', code: 'FASTMAL:NOT INTERESTING',
+                description: '', colour:  "252,141,98"},
         ];
     }
 
