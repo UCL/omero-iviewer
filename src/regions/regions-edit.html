@@ -75,16 +75,16 @@
         </div>
 
         <!-- FASt-Mal: display ROI type selection radio buttons -->
-        <div style="float: left; padding-top: 15px; height: 200px;">
+        <div style="float: left; padding-top: 15px; height: 220px;">
             Select ROI:<br /><br />
             <ul style="list-style: none;">
                 <li repeat.for="roi_type of context.fastMal.fastmal_roi_types">
                     <label><input type="radio" name="fastmal_roi_type" checked.bind="context.fastMal.fastmal_selected_roi_type" model.bind="roi_type.id" click.delegate="context.fastMal.fastmalRoiClick($event)" /> ${roi_type.name}</label>
                 </li>
             </ul>
+            <input type="checkbox" name="fastmal_roi_complete" change.delegate="context.fastMal.updateRoiCompleteTag($event.target.checked)" /> Annotation complete
+            <br />
         </div>
-
-
 
     <!-- FASt-Mal: hide shape comment input (we comment using the ROI type selected)
         <div class="shapes-edit">

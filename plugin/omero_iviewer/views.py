@@ -44,6 +44,7 @@ from collections import defaultdict
 
 FASTMAL_DATASET_ANNOTATE_TAG = 'ANNOTATE'
 FASTMAL_IMAGE_ANNOTATE_TAG = 'ANNOTATE'
+FASTMAL_IMAGE_ROI_COMPLETE_TAG = 'ROI_COMPLETE'
 
 
 WEB_API_VERSION = 0
@@ -214,6 +215,30 @@ def persist_rois(request, conn=None, **kwargs):
                             'error': repr(marshalOrPersistenceException)})
 
     return JsonResponse({"ids": ret_ids})
+
+@login_required()
+def fastmal_roi_complete_tag(request, image_id, state, conn=None, **kwargs):
+    # get handle to image roi complete tag
+    roi_complete_tag = [t for t in conn.getObjects("TagAnnotation") if t.getValue() == FASTMAL_IMAGE_ROI_COMPLETE_TAG][0]
+
+    # get the ImageAnnotationLink, if any
+    links = list(roi_complete_tag.getParentLinks("Image", [image_id]))
+    
+    # if we have link between tag and image, and we want to remove
+    if len(links) and state == "false":
+        print "we are removing the links between this tag and image"
+        ids = [l._obj.id.val for l in links]
+        conn.deleteObjects("ImageAnnotationLink", ids)
+        msg = "had link, removed";
+    # if we don't have link between tag and image, and we want to add
+    elif len(links) == 0 and state == "true":
+        image = conn.getObject("Image", image_id)
+        image.linkAnnotation(roi_complete_tag)
+        msg = "did not have link, added"
+    else:
+        msg = "nothing to do"
+
+    return JsonResponse({'msg': msg})
 
 
 @login_required()

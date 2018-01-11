@@ -125,6 +125,26 @@ export default class FastMal {
     }
 
     /**
+     * Update FASTMAL:ROI_COMPLETE tag for this image
+     */
+    updateRoiCompleteTag(state) {
+        $.ajax({
+            url : this.context.server +
+                '/iviewer/fastmal_roi_complete_tag/' + this.getRegionsInfo().image_info.image_id + '/' + state + '/', 
+            success : (response) => {
+                try {
+                    console.log('success');
+                } catch(err) {
+                    console.error("Failed to load Rois: ");
+                }
+            }, error : (error) => {
+                console.error("Failed to load Rois: ")
+            }
+        });
+    }
+
+
+    /**
      * Get active regions_info via the Context
      */
     getRegionsInfo() {
