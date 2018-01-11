@@ -501,6 +501,7 @@ export default class ThumbnailSlider extends EventSubscriber {
             // FASt-Mal check whether we should display this image to annotate
             if (this.context.fastMal.datasetRoiCounts.image_ids.indexOf(id) >= 0) {
                 if (append) {
+                    entry["roiCounts"] = this.context.fastMal.getRoiTypeCountsForImage(id);
                     this.thumbnails.push(entry);
                     this.thumbnails_end_index++;
                 } else {

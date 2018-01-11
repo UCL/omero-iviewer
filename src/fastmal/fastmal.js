@@ -105,7 +105,27 @@ export default class FastMal {
     }
 
     /**
-     * Get active regions_info via the Contex
+     * Return an array counting counts of each ROI type for a given image ID
+     * Used in thumbnail slider view
+     */
+    getRoiTypeCountsForImage(image_id) {
+        let roi_types = this.getRoiTypes();
+        let counts = [];
+        if (image_id in this.datasetRoiCounts["images_with_rois"]) {
+            let lookup = this.datasetRoiCounts["images_with_rois"][image_id.toString()];
+            for (let i = 1; i < roi_types.length; i++) {
+                counts.push(lookup[roi_types[i].code] ? lookup[roi_types[i].code] : 0);
+            }
+        } else {
+            for (let i = 1; i < roi_types.length; i++) {
+                counts.push(0);
+            }
+        }
+        return counts;
+    }
+
+    /**
+     * Get active regions_info via the Context
      */
     getRegionsInfo() {
         let image_config = this.context.getSelectedImageConfig();

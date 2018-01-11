@@ -231,7 +231,7 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
         return JsonResponse({"error": "Dataset does not have 'annotate' flag"}, status=500)
 
     try:
-        # get all annotable images in dataset
+        # 1. get all annotable images in dataset
         qs = conn.getQueryService()
         roiable_in_dataset = qs.projection("""select ial.parent 
                 from ImageAnnotationLink as ial 
@@ -241,9 +241,8 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
                     select child.id from DatasetImageLink where parent = %d
                 )""" % (FASTMAL_IMAGE_ANNOTATE_TAG, int(dataset_id)), None)
         roiable_in_dataset = (r[0].getValue().id.getValue() for r in roiable_in_dataset)
-        annotate_images = list(roiable_in_dataset)
 
-        # get the summary ROI type counts across the dataset
+        # 2. get the summary ROI type counts across the dataset
         dataset_totals = qs.projection("""select textValue, count(textValue) 
                 from Shape where roi in (
                     from Roi where image in (
@@ -252,14 +251,26 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
                         )
                     )
                 ) group by textValue""" % int(dataset_id), None)
-
         dataset_totals = { d[0].getValue(): d[1].getValue() for d in dataset_totals}
+
+        # 3. get rois per image in this dataset
+        images_in_dataset_rois = qs.projection("""
+                select s.roi.image.id, s.textValue, count(s.roi.image.id) from Shape s
+                where s.roi.image in (
+                    select child from DatasetImageLink where parent = %d
+                )
+                group by s.roi.image.id, s.textValue
+                """ % int(dataset_id), None)
+        rois_per_image = defaultdict(lambda: defaultdict(int))
+        for row in images_in_dataset_rois:
+            rois_per_image[long(row[0].getValue())][row[1].getValue()] = row[2].getValue()
 
         elapsed = timeit.default_timer() - start_time
 
-        response = { 'image_ids': annotate_images,
+        response = { 'image_ids': list(roiable_in_dataset),
                 'roi_type_count': dataset_totals,
-                'execution_time': elapsed}
+                'execution_time': elapsed,
+                'images_with_rois': rois_per_image}
 
         return JsonResponse(response)
     except Exception as dataset_rois_exception:
