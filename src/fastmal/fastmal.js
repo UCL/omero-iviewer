@@ -11,6 +11,7 @@ export const FASTMAL_DESELECTED = "FASTMAL_DESELECTED";
 export const FASTMAL_SELECTED = "FASTMAL_SELECTED";
 export const FASTMAL_COMMENT_UPDATE = "FASTMAL_COMMENT_UPDATE";
 export const FASTMAL_COUNT_UPDATE = "FASTMAL_COUNT_UPDATE";
+export const FASTMAL_THUMBNAIL_REFRESH = "FASTMAL_THUMBNAIL_REFRESH";
 
 export default class FastMal {
 
@@ -22,6 +23,8 @@ export default class FastMal {
      */
     fastmal_selected_roi_type = 0;
     fastmal_roi_types = null;
+    fastmal_selected_roi_complete = null;
+    fastmal_inprogress_images = [];
 
     /**
      * Holds the ROI information about a given dataset
@@ -90,16 +93,23 @@ export default class FastMal {
      * Called by regions-list.js when ROI list changes.
      */
     getRoiTypeCountsHTML(regions_info) {
+        if (this.context.getSelectedImageConfig().image_info.image_id.toString() in this.datasetRoiCounts['images_roi_complete']) {
+            this.fastmal_selected_roi_complete = true;
+        } else {
+            this.fastmal_selected_roi_complete = false;
+        }
         let counts = this.getRoiTypeCounts(regions_info);
         let roi_types = this.getRoiTypes();
         let html = "";
         // total = ROI type counts for image; grandTotal = ROI type counts for dataset
-        let total, grandTotal;
+        let total, grandTotal, iCount;
         let datasetCounts = this.datasetRoiCounts['roi_type_count'];
+        let imageCounts = this.datasetRoiCounts['images_per_roi'];
         for (let i = 1; i < roi_types.length; i++) {
             total = counts[roi_types[i].code] ? counts[roi_types[i].code] : 0;
             grandTotal = datasetCounts[roi_types[i].code] ? datasetCounts[roi_types[i].code] : 0;
-            html += roi_types[i].name + " = " + total + "/" + grandTotal + "; ";
+            iCount = imageCounts[roi_types[i].code] ? imageCounts[roi_types[i].code] : 0;
+            html += roi_types[i].name + ": " + total + " of " + grandTotal + " from " + iCount + "; ";
         }
         return html;
     }
@@ -130,15 +140,19 @@ export default class FastMal {
     updateRoiCompleteTag(state) {
         $.ajax({
             url : this.context.server +
-                '/iviewer/fastmal_roi_complete_tag/' + this.getRegionsInfo().image_info.image_id + '/' + state + '/', 
+                '/iviewer/fastmal_roi_complete_tag/' + this.getRegionsInfo().image_info.image_id + '/' + state + '/',
             success : (response) => {
                 try {
-                    console.log('success');
+                    console.log('Successfully set tag');
+                    this.refreshDatasetRoiCounts(null);
+                    return true;
                 } catch(err) {
-                    console.error("Failed to load Rois: ");
+                    console.error("Failed to set tag");
+                    return false;
                 }
             }, error : (error) => {
-                console.error("Failed to load Rois: ")
+                console.error("Failed to set tag")
+                return false;
             }
         });
     }
@@ -157,6 +171,19 @@ export default class FastMal {
      */
     fastmalRoiClick(event_in) {
         return this.roiTypeSelected(event_in.target.model);
+    }
+
+    /**
+     * Return the appropriate indicator to display next to thumbnail
+     * for complete/in progress/no ROI annotations
+     */
+    getCompletedRoiIndicator(image_id) {
+        if (image_id.toString() in this.datasetRoiCounts['images_roi_complete']) {
+            return '✔';
+        } else if (image_id.toString() in this.datasetRoiCounts['images_with_rois']) {
+            return '✘';
+        }
+        return '';
     }
 
     /**
@@ -202,7 +229,9 @@ export default class FastMal {
                 try {
                     this.datasetRoiCounts = response;
                     this.datasetRoiCounts['dataset_id'] = dataset_id;
+                    this.setInProgressImageIds();
                     this.context.publish(FASTMAL_COUNT_UPDATE, {}); // fires regions-list.updateRoiCounts()
+                    this.context.publish(FASTMAL_THUMBNAIL_REFRESH, {});
                 } catch(err) {
                     console.error("Failed to load Rois: ");
                     this.datasetRoiCounts = err.responseJSON;
@@ -213,5 +242,19 @@ export default class FastMal {
             }
         });
     }
-}
 
+    /**
+     * Constructs HTML links to display at top of thumbnail slide
+     * Lsit of in progress images
+     */
+    setInProgressImageIds() {
+        var image_ids = [];
+        for (var image_id in this.datasetRoiCounts['images_with_rois']) {
+            if (!(image_id in this.datasetRoiCounts['images_roi_complete'])) {
+                image_ids.push(image_id);
+            }
+        }
+        this.fastmal_inprogress_images = image_ids;
+    }
+
+}

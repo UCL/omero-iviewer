@@ -82,7 +82,7 @@
                     <label><input type="radio" name="fastmal_roi_type" checked.bind="context.fastMal.fastmal_selected_roi_type" model.bind="roi_type.id" click.delegate="context.fastMal.fastmalRoiClick($event)" /> ${roi_type.name}</label>
                 </li>
             </ul>
-            <input type="checkbox" name="fastmal_roi_complete" change.delegate="context.fastMal.updateRoiCompleteTag($event.target.checked)" /> Annotation complete
+            <input type="checkbox" checked.bind="context.fastMal.fastmal_selected_roi_complete" name="fastmal_roi_complete" click.delegate="context.fastMal.updateRoiCompleteTag($event.target.checked)" /> ROI annotation complete
             <br />
         </div>
 

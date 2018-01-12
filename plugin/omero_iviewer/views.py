@@ -40,11 +40,13 @@ from version import __version__
 # FASt-Mal imports:
 import timeit
 from omero.gateway import _ImageWrapper, TagAnnotationWrapper
+from omero.sys import Parameters
 from collections import defaultdict
 
-FASTMAL_DATASET_ANNOTATE_TAG = 'ANNOTATE'
-FASTMAL_IMAGE_ANNOTATE_TAG = 'ANNOTATE'
-FASTMAL_IMAGE_ROI_COMPLETE_TAG = 'ROI_COMPLETE'
+FASTMAL_TAG_PREFIX = 'FASTMAL:'
+FASTMAL_DATASET_ANNOTATE_TAG = FASTMAL_TAG_PREFIX + 'ANNOTATE'
+FASTMAL_IMAGE_ANNOTATE_TAG = FASTMAL_TAG_PREFIX + 'ANNOTATE'
+FASTMAL_IMAGE_ROI_COMPLETE_TAG = FASTMAL_TAG_PREFIX + 'ROI_COMPLETE'
 
 
 WEB_API_VERSION = 0
@@ -223,20 +225,20 @@ def fastmal_roi_complete_tag(request, image_id, state, conn=None, **kwargs):
 
     # get the ImageAnnotationLink, if any
     links = list(roi_complete_tag.getParentLinks("Image", [image_id]))
-    
+
     # if we have link between tag and image, and we want to remove
     if len(links) and state == "false":
         print "we are removing the links between this tag and image"
         ids = [l._obj.id.val for l in links]
         conn.deleteObjects("ImageAnnotationLink", ids)
-        msg = "had link, removed";
+        msg = "Had link, removed";
     # if we don't have link between tag and image, and we want to add
     elif len(links) == 0 and state == "true":
         image = conn.getObject("Image", image_id)
         image.linkAnnotation(roi_complete_tag)
-        msg = "did not have link, added"
+        msg = "Did not have link, added"
     else:
-        msg = "nothing to do"
+        msg = "Nothing to do"
 
     return JsonResponse({'msg': msg})
 
@@ -258,44 +260,69 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
     try:
         # 1. get all annotable images in dataset
         qs = conn.getQueryService()
-        roiable_in_dataset = qs.projection("""select ial.parent 
-                from ImageAnnotationLink as ial 
-                    inner join ial.child as annotation 
-                where annotation.textValue = '%s' 
+        roiable_in_dataset = qs.projection("""select ial.parent
+                from ImageAnnotationLink as ial
+                    inner join ial.child as annotation
+                where annotation.textValue = '%s' and ial.child.class IS TagAnnotation
                 and ial.parent in (
                     select child.id from DatasetImageLink where parent = %d
                 )""" % (FASTMAL_IMAGE_ANNOTATE_TAG, int(dataset_id)), None)
         roiable_in_dataset = (r[0].getValue().id.getValue() for r in roiable_in_dataset)
 
+        image_ids = list(roiable_in_dataset)
+        from omero.rtypes import rlong, rlist
+        params = Parameters()
+        params.map = {}
+        params.map["iids"] = rlist([rlong(o) for o in set(image_ids)])
+        service_opts = conn.SERVICE_OPTS.copy()
+
         # 2. get the summary ROI type counts across the dataset
-        dataset_totals = qs.projection("""select textValue, count(textValue) 
-                from Shape where roi in (
-                    from Roi where image in (
-                        from Image where id in (
-                            select child.id from DatasetImageLink where parent = %d
-                        )
-                    )
-                ) group by textValue""" % int(dataset_id), None)
+        dataset_totals = qs.projection("""select textValue, count(textValue)
+                from Shape where roi.image in (
+                    from Image where id in (:iids)
+                ) group by textValue""", params, service_opts)
         dataset_totals = { d[0].getValue(): d[1].getValue() for d in dataset_totals}
 
         # 3. get rois per image in this dataset
         images_in_dataset_rois = qs.projection("""
-                select s.roi.image.id, s.textValue, count(s.roi.image.id) from Shape s
+                select s.roi.image.id, s.textValue, count(s.roi.image.id) 
+                from Shape s
                 where s.roi.image in (
-                    select child from DatasetImageLink where parent = %d
+                    from Image where id in (:iids)
                 )
                 group by s.roi.image.id, s.textValue
-                """ % int(dataset_id), None)
+                """, params, service_opts)
         rois_per_image = defaultdict(lambda: defaultdict(int))
         for row in images_in_dataset_rois:
             rois_per_image[long(row[0].getValue())][row[1].getValue()] = row[2].getValue()
 
+        # 4. get number of images with particular annotations
+        images_per_roi = qs.projection("""
+            select s.textValue, count(distinct s.roi.image) from Shape s
+            where s.roi.image in (
+                from Image where id in (:iids)
+                )
+                group by s.textValue
+                """, params, service_opts)
+        images_per_roi = { i[0].getValue(): i[1].getValue() for i in images_per_roi }
+
+        # 5. get those images that are complete
+        images_roi_complete = qs.projection("""
+            select ial.parent.id from ImageAnnotationLink as ial
+            inner join ial.child as annotation
+            where annotation.textValue = '%s' and ial.child.class IS TagAnnotation
+            and ial.parent in (from Image where id in (:iids))
+            """ % FASTMAL_IMAGE_ROI_COMPLETE_TAG, params, service_opts)
+        images_roi_complete = {i[0].getValue(): 0 for i in images_roi_complete}
+
         elapsed = timeit.default_timer() - start_time
 
-        response = { 'image_ids': list(roiable_in_dataset),
+        response = { 'image_ids': image_ids,
                 'roi_type_count': dataset_totals,
                 'execution_time': elapsed,
-                'images_with_rois': rois_per_image}
+                'images_with_rois': rois_per_image,
+                'images_per_roi': images_per_roi,
+                'images_roi_complete': images_roi_complete}
 
         return JsonResponse(response)
     except Exception as dataset_rois_exception:

@@ -27,6 +27,7 @@ import {
 } from '../utils/constants';
 import {REGIONS_STORE_SHAPES, REGIONS_STORED_SHAPES} from '../events/events';
 import {THUMBNAILS_UPDATE, EventSubscriber} from '../events/events';
+import {FASTMAL_THUMBNAIL_REFRESH} from '../fastmal/fastmal';
 
 /**
  * Displays the image thumbnails
@@ -134,7 +135,10 @@ export default class ThumbnailSlider extends EventSubscriber {
      * @type {Map}
      */
     sub_list = [[THUMBNAILS_UPDATE,
-                    (params={}) => this.updateThumbnails(params)]];
+                    (params={}) => this.updateThumbnails(params)],
+                [FASTMAL_THUMBNAIL_REFRESH,
+                    (params={}) => this.refreshThumbnails()]
+                ];
 
     /**
      * @constructor
@@ -390,7 +394,8 @@ export default class ThumbnailSlider extends EventSubscriber {
                     id: id,
                     url: thumbPrefix + id + "/",
                     title: id,
-                    revision : 0
+                    revision : 0,
+                    roiCounts : this.context.fastMal.getRoiTypeCountsForImage(id)
                 });
                 this.thumbnails_end_index++;
             };
@@ -495,13 +500,13 @@ export default class ThumbnailSlider extends EventSubscriber {
                 id: id,
                 url: thumbPrefix + id + "/",
                 title: typeof item.Name === 'string' ? item.Name : id,
-                revision : 0
+                revision : 0,
+                roiCounts : this.context.fastMal.getRoiTypeCountsForImage(id)
             }
 
             // FASt-Mal check whether we should display this image to annotate
             if (this.context.fastMal.datasetRoiCounts.image_ids.indexOf(id) >= 0) {
                 if (append) {
-                    entry["roiCounts"] = this.context.fastMal.getRoiTypeCountsForImage(id);
                     this.thumbnails.push(entry);
                     this.thumbnails_end_index++;
                 } else {
@@ -525,6 +530,11 @@ export default class ThumbnailSlider extends EventSubscriber {
         $('.frame').css('padding-left', '');
     }
 
+    fastMalInProgressClick(image_id) {
+        console.log('image_id ' + image_id);
+        $('#img-thumb-' + image_id).click();
+    }
+
     /**
      * A click handler: sets the image id in the main view
      *
@@ -532,6 +542,7 @@ export default class ThumbnailSlider extends EventSubscriber {
      * @param {number} image_id the image id for the clicked thumbnail
      */
     onClick(image_id) {
+        console.log('handling click ' + image_id);
         let navigateToNewImage = () => {
             this.context.rememberImageConfigChange(image_id);
             let parent_id =

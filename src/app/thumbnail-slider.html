@@ -17,6 +17,14 @@
 -->
 
 <template>
+    <div>
+        In progress:
+        <a repeat.for="image_id of context.fastMal.fastmal_inprogress_images"
+            id="inprogress-${image_id}"
+            href="/iviewer/?dataset=${context.fastMal.datasetRoiCounts['dataset_id']}&images=${image_id}">
+            ${image_id}
+        </a>
+    </div>
     <div class="refresh_thumbnails glyphicon glyphicon-refresh
                 ${requesting_thumbnail_data ?
                     'background-color: disabled-color' : ''}"
@@ -39,7 +47,7 @@
              title="${thumb.title}"
              alt="Not Found"
              click.delegate="onClick(thumb.id)"/>
-        ${thumb.roiCounts}
+        ${thumb.roiCounts} ${context.fastMal.getCompletedRoiIndicator(thumb.id)}
         </template>
     </div>
     <div show.bind="thumbnails_end_index < thumbnails_count"
