@@ -34,7 +34,7 @@
         <template repeat.for="thumb of thumbnails">
         <img id="${'img-thumb-' + thumb.id}"
              css="${image_config.image_info.image_id === thumb.id ?
-                 'border: 2px solid rgba(0,60,136,0.5)' : 'border: none'}"
+                 'border: 4px solid rgba(0,60,136,0.5)' : 'border: none'}"
              src.bind="thumb.url + '?version=' + thumb.revision"
              title="${thumb.title}"
              alt="Not Found"

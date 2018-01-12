@@ -462,7 +462,7 @@ export default class RegionsInfo  {
             '@type': 'TBD#LengthI',
             'Unit': 'PIXEL',
             'Symbol': 'pixel',
-            'Value': 2  // FASt-Mal: a thicker default stroke width
+            'Value': 3  // FASt-Mal: a thicker default stroke width
         };
     }
 
