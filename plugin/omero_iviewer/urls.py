@@ -19,9 +19,9 @@ from django.conf.urls import patterns
 from django.conf.urls import url
 
 import views
+import views_fastmal
 
 urlpatterns = patterns(
-
     'django.views.generic.simple',
     # general entry point for iviewer app
     url(r'^/?$', views.index, name='omero_iviewer_index'),
@@ -37,9 +37,9 @@ urlpatterns = patterns(
         name='omero_iviewer_get_intensity'),
     url(r'^shape_stats/?$', views.shape_stats,
         name='omero_iviewer_shape_stats'),
-    url(r'^fastmal_data/(?P<dataset_id>[0-9]+)/$', views.fastmal_data,
+    url(r'^fastmal_data/(?P<dataset_id>[0-9]+)/$', views_fastmal.fastmal_data,
         name='omero_iviewer_fastmal_data'),
-    url(r'^fastmal_roi_complete_tag/(?P<image_id>[0-9]+)/(?P<state>true|false)/$', views.fastmal_roi_complete_tag,
+    url(r'^fastmal_roi_complete_tag/(?P<image_id>[0-9]+)/(?P<state>true|false)/$', views_fastmal.fastmal_roi_complete_tag,
         name='omero_iviewer_fastmal_roi_complete_tag'),
-    url(r'^fastmal_user/$', views.fastmal_user, 
+    url(r'^fastmal_user/$', views_fastmal.fastmal_user, 
         name='omero_iviewer_fastmal_user'))
