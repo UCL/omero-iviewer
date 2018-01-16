@@ -260,7 +260,7 @@ export default class RegionsInfo  {
             url : this.image_info.context.server +
                   this.image_info.context.getPrefixedURI(WEB_API_BASE) +
                   REGIONS_REQUEST_URL + '/?image=' + this.image_info.image_id +
-                  '&limit=' + this.REQUEST_LIMIT,
+                  '&limit=' + this.REQUEST_LIMIT + '&owner=' + this.image_info.context.fastMal["userInfo"].id,
             success : (response) => {
                 this.is_pending = false;
                 try {

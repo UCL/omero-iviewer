@@ -244,6 +244,22 @@ def fastmal_roi_complete_tag(request, image_id, state, conn=None, **kwargs):
 
 
 @login_required()
+def fastmal_user(request, conn=None, **kwargs):
+    try:
+        user = conn.getUser()
+        user_id = user.getId()
+        user_fullname = user.getFullName()
+        user_name = user.getName()
+        user_current_id = request.session['user_id']
+        response = { 'id' : user_id,
+                'name' : user_name,
+                'fullname' : user_fullname,
+                'current_id' : user_current_id}
+        return JsonResponse(response)
+    except Exception as user_exception:
+        return JsonResponse({'error': repr(user_exception)})
+
+@login_required()
 def fastmal_data(request, dataset_id, conn=None, **kwargs):
     start_time = timeit.default_timer()
 

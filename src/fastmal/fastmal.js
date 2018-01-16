@@ -61,8 +61,34 @@ export default class FastMal {
     constructor(context) {
         this.context = context;
         this.fastmal_roi_types = this.getRoiTypes();
+        this.setUserInfo();
         console.log('Instantiated FastMal');
     }
+
+    userInfo = null;
+
+    /**
+     * Requests the logged in user's information and stores it locally
+     * (used to filter ROIs by user)
+     */
+    setUserInfo() {
+        $.ajax({
+            url : '/iviewer/fastmal_user/',
+            async : true, 
+            success : (response) => {
+                try {
+                    this.userInfo = response;
+                } catch(err) {
+                    console.error("Failed to userInfo");
+                    this.userInfo = err.responseJSON;
+                }
+            }, error : (error) => {
+                console.error("Failed to load userInfo")
+                this.userInfo = error.responseJSON;
+            }
+        });
+    }
+
 
     /**
      * Returns the ROI types valid for this type of image

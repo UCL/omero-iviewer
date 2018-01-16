@@ -40,4 +40,6 @@ urlpatterns = patterns(
     url(r'^fastmal_data/(?P<dataset_id>[0-9]+)/$', views.fastmal_data,
         name='omero_iviewer_fastmal_data'),
     url(r'^fastmal_roi_complete_tag/(?P<image_id>[0-9]+)/(?P<state>true|false)/$', views.fastmal_roi_complete_tag,
-        name='omero_iviewer_fastmal_roi_complete_tag'))
+        name='omero_iviewer_fastmal_roi_complete_tag'),
+    url(r'^fastmal_user/$', views.fastmal_user, 
+        name='omero_iviewer_fastmal_user'))
