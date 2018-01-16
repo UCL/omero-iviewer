@@ -220,15 +220,21 @@ def persist_rois(request, conn=None, **kwargs):
 
 @login_required()
 def fastmal_roi_complete_tag(request, image_id, state, conn=None, **kwargs):
-    # get handle to image roi complete tag
+    # we need to switch to the active group to get the tags in this dataset
+    original_group = conn.getGroupFromContext()
+    conn.setGroupForSession(request.session['active_group'])
+
+    # get handle to image roi complete tag [for the current user]
     roi_complete_tag = [t for t in conn.getObjects("TagAnnotation") if t.getValue() == FASTMAL_IMAGE_ROI_COMPLETE_TAG][0]
 
     # get the ImageAnnotationLink, if any
-    links = list(roi_complete_tag.getParentLinks("Image", [image_id]))
+    links = roi_complete_tag.getParentLinks("Image", [image_id])
+    
+    # filter by current user
+    links = [a for a in links if a.getOwner().getId() == conn.getUser().getId()]
 
     # if we have link between tag and image, and we want to remove
     if len(links) and state == "false":
-        print "we are removing the links between this tag and image"
         ids = [l._obj.id.val for l in links]
         conn.deleteObjects("ImageAnnotationLink", ids)
         msg = "Had link, removed";
@@ -239,6 +245,8 @@ def fastmal_roi_complete_tag(request, image_id, state, conn=None, **kwargs):
         msg = "Did not have link, added"
     else:
         msg = "Nothing to do"
+
+    conn.setGroupForSession(original_group)
 
     return JsonResponse({'msg': msg})
 
@@ -274,29 +282,40 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
         return JsonResponse({"error": "Dataset does not have 'annotate' flag"}, status=500)
 
     try:
+        from omero.rtypes import rlong, rlist, rstring
+        service_opts = conn.SERVICE_OPTS.copy()
+
         # 1. get all annotable images in dataset
         qs = conn.getQueryService()
+        params = Parameters()
+        params.map = {"tagName": rstring(FASTMAL_IMAGE_ANNOTATE_TAG), 
+                "datasetId": rlong(int(dataset_id))}
+        # TODO: params not working?
         roiable_in_dataset = qs.projection("""select ial.parent
                 from ImageAnnotationLink as ial
                     inner join ial.child as annotation
                 where annotation.textValue = '%s' and ial.child.class IS TagAnnotation
                 and ial.parent in (
                     select child.id from DatasetImageLink where parent = %d
-                )""" % (FASTMAL_IMAGE_ANNOTATE_TAG, int(dataset_id)), None)
+                )""" % (FASTMAL_IMAGE_ANNOTATE_TAG, int(dataset_id)), None, service_opts)
+        
         roiable_in_dataset = (r[0].getValue().id.getValue() for r in roiable_in_dataset)
 
         image_ids = list(roiable_in_dataset)
-        from omero.rtypes import rlong, rlist
         params = Parameters()
         params.map = {}
         params.map["iids"] = rlist([rlong(o) for o in set(image_ids)])
-        service_opts = conn.SERVICE_OPTS.copy()
+        params.map["oid"] = rlong(conn.getUser().getId())
 
-        # 2. get the summary ROI type counts across the dataset
-        dataset_totals = qs.projection("""select textValue, count(textValue)
-                from Shape where roi.image in (
+        print 'user info', request.session['user_id']
+
+        # 2. get the summary ROI type counts across the dataset, for this user
+        dataset_totals = qs.projection("""select s.textValue, count(s.textValue)
+                from Shape as s where s.roi.image in (
                     from Image where id in (:iids)
-                ) group by textValue""", params, service_opts)
+                ) 
+                and s.details.owner.id = :oid
+                group by s.textValue""", params, service_opts)
         dataset_totals = { d[0].getValue(): d[1].getValue() for d in dataset_totals}
 
         # 3. get rois per image in this dataset
@@ -306,6 +325,7 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
                 where s.roi.image in (
                     from Image where id in (:iids)
                 )
+                and s.details.owner.id = :oid
                 group by s.roi.image.id, s.textValue
                 """, params, service_opts)
         rois_per_image = defaultdict(lambda: defaultdict(int))
@@ -318,6 +338,7 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
             where s.roi.image in (
                 from Image where id in (:iids)
                 )
+                and s.details.owner.id = :oid
                 group by s.textValue
                 """, params, service_opts)
         images_per_roi = { i[0].getValue(): i[1].getValue() for i in images_per_roi }
@@ -328,6 +349,7 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
             inner join ial.child as annotation
             where annotation.textValue = '%s' and ial.child.class IS TagAnnotation
             and ial.parent in (from Image where id in (:iids))
+            and ial.details.owner.id = :oid
             """ % FASTMAL_IMAGE_ROI_COMPLETE_TAG, params, service_opts)
         images_roi_complete = {i[0].getValue(): 0 for i in images_roi_complete}
 
