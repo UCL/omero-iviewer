@@ -6,7 +6,7 @@ from omero.gateway import _ImageWrapper, TagAnnotationWrapper
 from omero.sys import Parameters
 from collections import defaultdict
 
-FASTMAL_TAG_PREFIX = 'FASTMAL:'
+FASTMAL_TAG_PREFIX = 'FASTMAL_'
 FASTMAL_DATASET_ANNOTATE_TAG = FASTMAL_TAG_PREFIX + 'ANNOTATE'
 FASTMAL_IMAGE_ANNOTATE_TAG = FASTMAL_TAG_PREFIX + 'ANNOTATE'
 FASTMAL_IMAGE_ROI_COMPLETE_TAG = FASTMAL_TAG_PREFIX + 'ROI_COMPLETE'
