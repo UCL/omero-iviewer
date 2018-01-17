@@ -21,13 +21,17 @@ def fastmal_roi_complete_tag(request, image_id, state, conn=None, **kwargs):
         will get the relevant tag annotation reference for the current context and
         add/remove the link as required
     """
+    original_group_id = conn.getGroupFromContext().getId()
     # Switch to the active group to get the tags in this dataset
     if 'active_group' in request.session:
-        original_group_id = conn.getGroupFromContext().getId()
         conn.setGroupForSession(request.session['active_group'])
+    current_group_id = conn.getGroupFromContext().getId()
 
-    # Get reference to the ROI_COMPLETE tag
-    roi_complete_tag = [t for t in conn.getObjects("TagAnnotation") if t.getValue() == FASTMAL_IMAGE_ROI_COMPLETE_TAG][0]
+    # Get reference to the FASTMAL_ROI_COMPLETE tag in this group
+    roi_complete_tag = [t for t in conn.getObjects("TagAnnotation") if t.getValue() == FASTMAL_IMAGE_ROI_COMPLETE_TAG and t.getDetails().getGroup().getId() == current_group_id]
+    if len(roi_complete_tag) != 1:
+        return JsonResponse({'error': ','.join([str((t.getId, t.getDetails().getGroup())) for t in roi_complete_tag])})
+    roi_complete_tag = roi_complete_tag[0]
 
     # Get the ImageAnnotationLink, if any, and filter by current user
     links = roi_complete_tag.getParentLinks("Image", [image_id])
