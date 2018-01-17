@@ -46,6 +46,9 @@ export default class FastMal {
         ];
     }
 
+    /**
+     * NOTE: these are made up
+     */
     static get THIN_FILM_ROI_TYPES() {
         return [
             { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!',
@@ -74,7 +77,7 @@ export default class FastMal {
     setUserInfo() {
         $.ajax({
             url : '/iviewer/fastmal_user/',
-            async : true, 
+            async : true,
             success : (response) => {
                 try {
                     this.userInfo = response;

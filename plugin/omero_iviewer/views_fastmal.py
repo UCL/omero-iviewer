@@ -37,13 +37,16 @@ def fastmal_roi_complete_tag(request, image_id, state, conn=None, **kwargs):
     links = roi_complete_tag.getParentLinks("Image", [image_id])
     links = [a for a in links if a.getOwner().getId() == conn.getUser().getId()]
 
+    hasTag = state == "true"
+
     # If we have link between tag and image, and we want to remove
-    if len(links) and state == "false":
+    if len(links) and not hasTag:
         ids = [l._obj.id.val for l in links]
-        conn.deleteObjects("ImageAnnotationLink", ids)
+        # TODO: why isn't conn.deleteObject(link[0]) working?
+        conn.deleteObjects("ImageAnnotationLink", ids, wait=True)
         msg = "Had link, removed";
     # If we don't have link between tag and image, and we want to add
-    elif len(links) == 0 and state == "true":
+    elif len(links) == 0 and hasTag:
         image = conn.getObject("Image", image_id)
         image.linkAnnotation(roi_complete_tag)
         msg = "Did not have link, added"
