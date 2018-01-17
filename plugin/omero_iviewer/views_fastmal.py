@@ -22,8 +22,9 @@ def fastmal_roi_complete_tag(request, image_id, state, conn=None, **kwargs):
         add/remove the link as required
     """
     # Switch to the active group to get the tags in this dataset
-    original_group = conn.getGroupFromContext()
-    conn.setGroupForSession(request.session['active_group'])
+    if 'active_group' in request.session:
+        original_group_id = conn.getGroupFromContext().getId()
+        conn.setGroupForSession(request.session['active_group'])
 
     # Get reference to the ROI_COMPLETE tag
     roi_complete_tag = [t for t in conn.getObjects("TagAnnotation") if t.getValue() == FASTMAL_IMAGE_ROI_COMPLETE_TAG][0]
@@ -46,7 +47,8 @@ def fastmal_roi_complete_tag(request, image_id, state, conn=None, **kwargs):
         msg = "Nothing to do"
 
     # Set the session context back to the original group (being cautious!)
-    conn.setGroupForSession(original_group)
+    if 'active_group' in request.session:
+        conn.setGroupForSession(original_group_id)
 
     return JsonResponse({'msg': msg})
 
