@@ -27,6 +27,11 @@ export default class FastMal {
     fastmal_inprogress_images = [];
 
     /**
+     * Stores the current active shape
+     */
+    fastmal_last_active_shape = 0; // rectangle
+
+    /**
      * Holds the ROI information about a given dataset
      */
     datasetRoiCounts = null;
@@ -37,11 +42,15 @@ export default class FastMal {
                 description: 'No shape - only select', colour: "0,0,0"},
             { id: 1, name: 'White cell', code: 'FASTMAL:WHITE_CELL',
                 description: '', colour: "102,194,165" },
-            { id: 2, name: 'Parasite', code: 'FASTMAL:PARASITE',
+            { id: 2, name: 'White cell (CROWD)', code: 'FASTMAL:WHITE_CELL_CROWD',
+                description: '', colour: "102,194,164" },
+            { id: 3, name: 'Parasite', code: 'FASTMAL:PARASITE',
                 description: '', colour:  "252,141,98"},
-            { id: 3, name: 'Background', code: 'FASTMAL:BACKGROUND',
+            { id: 4, name: 'Parasite (CROWD)', code: 'FASTMAL:PARASITE_CROWD',
+                description: '', colour:  "252,141,98"},
+            { id: 5, name: 'Background', code: 'FASTMAL:BACKGROUND',
                 description: '', colour: "141,160,203"},
-            { id: 4, name: 'Ignore', code: 'FASTMAL:IGNORE',
+            { id: 6, name: 'Ignore', code: 'FASTMAL:IGNORE',
                 description: '', colour: "231,138,195" },
         ];
     }
@@ -231,12 +240,11 @@ export default class FastMal {
         }
 
         regions_info.shape_defaults.Text = roi_types[type_id].code;
-        regions_info.shape_to_be_drawn = 'rectangle';
 
         let rgb_string = 'rgb(' + roi_types[type_id].colour + ')';
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
 
-        this.context.publish(FASTMAL_SELECTED, {shape_id: 0}); // fires regions-drawing.onDrawShape()
+        this.context.publish(FASTMAL_SELECTED, {shape_id: this.fastmal_last_active_shape}); // fires regions-drawing.onDrawShape()
         return true;
     }
 

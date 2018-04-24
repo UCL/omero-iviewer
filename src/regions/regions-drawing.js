@@ -51,16 +51,11 @@ export default class RegionsDrawing extends EventSubscriber {
      * a list of supported shapes for iteration
      * @memberof RegionsDrawing
      * @type {Array.<string>}
+     * "rectangle", "ellipse", "point", "arrow", "line", "polyline", "polygon", "label"
      */
     supported_shapes = [
         "rectangle",
-        "ellipse",
-        "point",
-        "arrow",
-        "line",
-        "polyline",
-        "polygon",
-        "label"
+        "polygon"
     ];
 
     /**
@@ -300,8 +295,14 @@ export default class RegionsDrawing extends EventSubscriber {
         if (index < 0 || index >= this.supported_shapes.length) {
             abort = true;
             this.regions_info.shape_to_be_drawn = null;
+        } else if (this.regions_info.shape_defaults.Text == null || this.regions_info.shape_defaults.Text === '') {
+            // fastmal: only allow selection of shape if user has selected ROI type
+            abort = true;
+            this.regions_info.shape_to_be_drawn = null;
         } else {
             this.regions_info.shape_to_be_drawn = this.supported_shapes[index];
+            // save the selected type for fastmal
+            this.context.fastMal.fastmal_last_active_shape = index;
         }
 
         // define shape to be drawn including any pre-set defaults (e.g. colors)

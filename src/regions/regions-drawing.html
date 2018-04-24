@@ -17,8 +17,8 @@
 -->
 
 <template>
-    <div class="row regions-drawing">
-        <!-- FASt-Mal: Remove shape icons
+    <div class="row regions-drawing" style="height: 50px; padding-bottom:10px;">
+        <!-- FASt-Mal: Remove shape selection (set by 'off')
         <div class="draw-icons draw-select-icon
                     ${regions_info.shape_to_be_drawn === null ?
                         'draw-active' : 'draw-inactive'}"
@@ -26,12 +26,13 @@
              style="margin-right: 30px"
              click.delegate="onDrawShape(-1)">
         </div>
+        -->
         <div repeat.for="shape of supported_shapes"
             class="draw-icons draw-${shape}-icon
                 ${regions_info.shape_to_be_drawn === shape ?
                     'draw-active' : 'draw-inactive'}"
             click.delegate="onDrawShape($index)"
             title="Draw ${shape}" />
-        -->
     </div>
+    <hr />
 </template>
