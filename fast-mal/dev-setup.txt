@@ -15,7 +15,7 @@ vim index.html
 
 # Install plugin into omero (where your virtual env is)
 cd FASt-Mal/OMERO.web
-source activate omerowebenv
+conda activate ./omerowebenv
 cd FASt-Mal/FASt-Mal-IMS/omero/omero-iviewer/plugin
 pip install -U -e .
 
