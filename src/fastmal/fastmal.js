@@ -294,4 +294,13 @@ export default class FastMal {
         this.fastmal_inprogress_images = image_ids;
     }
 
+    /**
+     * Handles the updating of the range in CROWD roi annotation
+     */
+    updateCrowdRange(shape, event_in) {
+        console.log('fastMal.updateCrowdRange');
+        console.log(shape);
+        console.log(event_in.target.value);
+    }
+
 }

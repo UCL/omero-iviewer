@@ -388,4 +388,16 @@ export default class RegionsList extends EventSubscriber {
         this.unsubscribe();
         this.unregisterObservers();
     }
+
+    // FASt-Mal
+    updateCrowdRange(shape, event_in) {
+        this.context.fastMal.updateCrowdRange(shape, event_in)
+    }
+
+    /**
+     * Extracts the crowd range from crowd shape text
+     */
+    getCrowdRange(shape) {
+        console.log(shape.shape_id);
+    }
 }

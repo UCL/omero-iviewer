@@ -755,8 +755,9 @@ thumbnail-slider img {
     background-position: center;
 }
 .shape-comment {
-    min-width: 50%;
-    max-width: 50%;
+    min-width: 90%;
+    max-width: 90%;
+    text-align: left;
 }
 .shape-area {
     min-width: 20%;
@@ -767,8 +768,8 @@ thumbnail-slider img {
     max-width: 25%;
 }
 .shape-show {
-    min-width: 15%;
-    max-width: 15%;
+    min-width: 10%;
+    max-width: 10%;
 }
 
 .rectangle-icon {

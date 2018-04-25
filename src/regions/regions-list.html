@@ -50,12 +50,11 @@
                            change.delegate="toggleAllShapesVisibility($event)"
                            type="checkbox" />
                 </div>
-                <div class="regions-table-col shape-show">
+                <!-- <div class="regions-table-col shape-show">
                     <label for="shapes_visibility_toggler"
                            show.bind="regions_info.number_of_shapes > 0">Show</label>
-                </div>
-                <div class="regions-table-col shape-type">&nbsp;</div>
-                <!--
+                </div>-->
+                <!--<div class="regions-table-col shape-type">&nbsp;</div>
                 <div class="regions-table-col shape-z">Z</div>
                 <div class="regions-table-col shape-t">T</div>
                 -->
@@ -83,26 +82,26 @@
                         title="ROI: ${roi_id} - Shape: ${shape_id}"
                         class="regions-table-row"
                         click.delegate="selectShapes(roi_id, $event)">
-                        <div class="regions-table-col roi-toggle">
+                        <!-- 1 <div class="regions-table-col roi-toggle">
                             <div title="Click to show/hide shapes"
                                  style="cursor: pointer"
                                  click.delegate="expandOrCollapseRoi(roi_id, $event)">
                                  ${roi.show ? '&#9660;' : '&#9658;'}
                              </div>
-                         </div>
-                         <div class="regions-table-col shape-show"></div>
-                         <div class="regions-table-col shape-type">
+                        </div> -->
+                        <!-- 2 --><div class="regions-table-col shape-show"></div>
+                         <!-- 3  <div class="regions-table-col shape-type">
                              (${(roi.shapes.size - roi.deleted)})
-                         </div>
+                         </div> --> 
                          <!--
                         <div class="regions-table-col shape-z"></div>
                         <div class="regions-table-col shape-t"></div>
                          -->
-                        <div class="regions-table-col shape-comment"
+                         <!-- 4 --> <div class="regions-table-col shape-comment"
                              style="display: none">
                         </div>
-                        <div class="regions-table-col shape-area"></div>
-                        <div class="regions-table-col shape-length"></div>
+                        <!-- 5 --> <div class="regions-table-col shape-area"></div>
+                        <!-- 6 --> <div class="regions-table-col shape-length"></div>
                     </div>
                     <div if.bind="!(shape.deleted && shape.is_new) &&
                                    !(roi.shapes.size > 1 && !roi.show)"
@@ -113,8 +112,8 @@
                              ${shape.deleted ? 'color: red;' :
                                 (shape.modified ? 'color: blue;' : '')}"
                         click.delegate="selectShape(shape.shape_id, shape.selected, $event)">
-                        <div class="regions-table-col roi-toggle"></div>
-                        <div class="regions-table-col shape-show">
+                        <!-- 1 <div class="regions-table-col roi-toggle"></div> -->
+                        <!-- 2 --> <div class="regions-table-col shape-show">
                             <input type="checkbox"
                                 title="Show/Hide shape" checked.one-way="shape.visible"
                                 change.delegate="toggleShapeVisibility(shape.shape_id, $event)"/>
@@ -128,16 +127,17 @@
                             ${shape.TheT !== -1 ? (shape.TheT + 1) : ""}
                         </div>
                         -->
-                        <div class="regions-table-col shape-comment"
+                        <!-- 3 --> <div class="regions-table-col shape-comment"
                              show.bind="active_column === 'comments'">
-                                ${shape.Text ? shape.Text : ''}
+                            ${shape.Text ? shape.Text : ''} ${shape_id}
+                                <input if.bind="shape.Text.includes('_CROWD') && shape_id > 0" change.delegate="updateCrowdRange(shape, $event)" style="width:65px" value.one-way="getCrowdRange(shape)" />
                         </div>
-                        <div class="regions-table-col shape-area"
+                        <!-- 4 --> <div class="regions-table-col shape-area"
                              show.bind="active_column === 'measurements'"
                              title="${shape.Area && shape.Area > 0 ? shape.Area : ''}">
                                 ${shape.Area && shape.Area > 0 ? shape.Area : ''}
                         </div>
-                        <div class="regions-table-col shape-length"
+                        <!-- 5 --> <div class="regions-table-col shape-length"
                              show.bind="active_column === 'measurements'"
                              title="${shape.Length && shape.Length > 0 ? shape.Length : ''}">
                                 ${shape.Length && shape.Length > 0 ? shape.Length : ''}
