@@ -311,6 +311,7 @@ export default class FastMal {
                     } else if ("msg" in response) {
                         console.log('CrowdRange saved');
                         event_in.target.style.backgroundColor = 'lightgreen';
+                        setTimeout(function(){ event_in.target.style.backgroundColor='white'; }, 3000);
                     } else {
                         event_in.target.value = "???";
                     }
