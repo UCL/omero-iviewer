@@ -39,7 +39,14 @@ urlpatterns = patterns(
         name='omero_iviewer_shape_stats'),
     url(r'^fastmal_data/(?P<dataset_id>[0-9]+)/$', views_fastmal.fastmal_data,
         name='omero_iviewer_fastmal_data'),
-    url(r'^fastmal_roi_complete_tag/(?P<image_id>[0-9]+)/(?P<state>true|false)/$', views_fastmal.fastmal_roi_complete_tag,
+    url(r'^fastmal_roi_complete_tag/(?P<image_id>[0-9]+)/(?P<state>true|false)/$', 
+        views_fastmal.fastmal_roi_complete_tag,
         name='omero_iviewer_fastmal_roi_complete_tag'),
     url(r'^fastmal_user/$', views_fastmal.fastmal_user, 
-        name='omero_iviewer_fastmal_user'))
+        name='omero_iviewer_fastmal_user'),
+    url(r'^fastmal_shape_annotation/(?P<shape_id>[0-9]+)/(?P<key>.*?)/(?P<value_new>.*?)/$', 
+        views_fastmal.fastmal_shape_annotation, 
+        name='omero_iviewer_fastmal_shape_annotation'),
+    url(r'^fastmal_shape_annotation/(?P<shape_id>[0-9]+)/(?P<key>.*?)/$', 
+        views_fastmal.fastmal_shape_annotation, 
+        name='omero_iviewer_fastmal_shape_annotation'))

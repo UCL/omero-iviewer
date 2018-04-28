@@ -130,7 +130,7 @@
                         <!-- 3 --> <div class="regions-table-col shape-comment"
                              show.bind="active_column === 'comments'">
                             ${shape.Text ? shape.Text : ''} ${shape_id}
-                                <input if.bind="shape.Text.includes('_CROWD') && shape_id > 0" change.delegate="updateCrowdRange(shape, $event)" style="width:65px" value.one-way="getCrowdRange(shape)" />
+                            <input if.bind="shape.Text.includes('_CROWD') && shape_id > 0" change.delegate="updateCrowdRange(shape, $event)" element.ref="crowdRange" style="width:65px" value.one-way="getCrowdRange(shape, crowdRange)" />
                         </div>
                         <!-- 4 --> <div class="regions-table-col shape-area"
                              show.bind="active_column === 'measurements'"

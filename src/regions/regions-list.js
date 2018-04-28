@@ -390,6 +390,9 @@ export default class RegionsList extends EventSubscriber {
     }
 
     // FASt-Mal
+    /**
+     * Apply changes to crowd range annotation
+     */
     updateCrowdRange(shape, event_in) {
         this.context.fastMal.updateCrowdRange(shape, event_in)
     }
@@ -397,7 +400,8 @@ export default class RegionsList extends EventSubscriber {
     /**
      * Extracts the crowd range from crowd shape text
      */
-    getCrowdRange(shape) {
-        console.log(shape.shape_id);
+    getCrowdRange(shape, element) {
+        let annotation = this.context.fastMal.getCrowdRange(shape, element)
+        return "loading...";
     }
 }

@@ -298,9 +298,63 @@ export default class FastMal {
      * Handles the updating of the range in CROWD roi annotation
      */
     updateCrowdRange(shape, event_in) {
-        console.log('fastMal.updateCrowdRange');
-        console.log(shape);
-        console.log(event_in.target.value);
+        let shape_id = shape['@id'];
+        $.ajax({
+            // this.context.getPrefixedURI(IVIEWER) is not ready...?
+            url : this.context.server +
+                '/iviewer/fastmal_shape_annotation/' + shape_id + '/CrowdRange/' + event_in.target.value + '/',
+            async : true,
+            success : (response) => {
+                try {
+                    if ("error" in response) {
+                        event_in.target.value = '???';
+                    } else if ("msg" in response) {
+                        console.log('CrowdRange saved');
+                        event_in.target.style.backgroundColor = 'lightgreen';
+                    } else {
+                        event_in.target.value = "???";
+                    }
+                } catch(err) {
+                    console.error("Failed to get shape annotation ");
+                    event_in.target.value="???";
+                }
+            }, error : (error) => {
+                console.error("Failed to get shape annotation ")
+                event_in.target.value="???";
+            }
+        });
     }
+
+    /**
+     * Gets crowd range annotation, if any, for a given shape
+     */
+    getCrowdRange(shape, element) {
+        let shape_id = shape['@id'];
+        let return_msg = "";
+        $.ajax({
+            // this.context.getPrefixedURI(IVIEWER) is not ready...?
+            url : this.context.server +
+                '/iviewer/fastmal_shape_annotation/' + shape_id + '/CrowdRange/',
+            async : true,
+            success : (response) => {
+                try {
+                    if ("error" in response && response["error"] == "Annotation not found") {
+                        element.value = '';
+                    } else if ("msg" in response && response["msg"] == "MapAnnotation found") {
+                        element.value = response["annotation"][1];
+                    } else {
+                        element.value = "???";
+                    }
+                } catch(err) {
+                    console.error("Failed to get shape annotation ");
+                    element.value="???";
+                }
+            }, error : (error) => {
+                console.error("Failed to get shape annotation ")
+                element.value="???";
+            }
+        });
+    }
+
 
 }

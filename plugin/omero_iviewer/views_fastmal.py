@@ -3,7 +3,7 @@ import timeit
 
 from django.http import JsonResponse
 
-from omero.gateway import _ImageWrapper, TagAnnotationWrapper
+from omero.gateway import _ImageWrapper, TagAnnotationWrapper, MapAnnotationWrapper
 from omero.rtypes import rlong, rlist, rstring
 from omero.sys import Parameters
 from omeroweb.decorators import login_required
@@ -13,6 +13,67 @@ FASTMAL_TAG_PREFIX = 'FASTMAL_'
 FASTMAL_DATASET_ANNOTATE_TAG = FASTMAL_TAG_PREFIX + 'ANNOTATE'
 FASTMAL_IMAGE_ANNOTATE_TAG = 'EDOF_RGB'
 FASTMAL_IMAGE_ROI_COMPLETE_TAG = FASTMAL_TAG_PREFIX + 'ROI_COMPLETE'
+
+@login_required()
+def fastmal_shape_annotation(request, shape_id, key, value_new=None, conn=None, **kwargs):
+    """
+    Handles adding/change (not removing) map annotations to shapes
+    """
+    # Switch to the active group to get the tags in this dataset
+    original_group_id = conn.getGroupFromContext().getId()
+    if 'active_group' in request.session:
+        conn.setGroupForSession(request.session['active_group'])
+    current_group_id = conn.getGroupFromContext().getId()
+    conn.SERVICE_OPTS.setOmeroGroup(current_group_id)
+
+    # Get shape
+    shape = conn.getObject('Shape', shape_id)
+
+    # If shape exists
+    if shape:
+        msg = ''
+
+        # See if the annotation already exists for this shape
+        annotations = conn.getAnnotationLinks('Shape', [shape_id])
+        map_ann = None
+        for annotation in annotations:
+            check_ann = annotation.getAnnotation()
+            if isinstance(check_ann, MapAnnotationWrapper):
+                if check_ann.getValue()[0][0] == key:
+                    map_ann = check_ann
+                    msg = 'MapAnnotation found'
+                    break
+
+        # If we're setting annotation
+        if key and value_new:
+            # If annotation exists
+            if map_ann:
+                # Edit annotation
+                map_ann.setValue([[key, value_new]])
+                map_ann.save()
+                msg = 'MapAnnotation exists; updated value.'
+            # Otherwise annotation deson't exists
+            else:
+                # Create and save annotation
+                map_ann = MapAnnotationWrapper(conn)
+                map_ann.setValue([[key, value_new]])
+                map_ann.save()
+                shape.linkAnnotation(map_ann)
+                msg = 'MapAnnotation created.'
+
+        # Set the session context back to the original group (being cautious!)
+        if 'active_group' in request.session:
+            conn.setGroupForSession(original_group_id)
+
+        # Return the annotation
+        if map_ann:
+            return JsonResponse({'msg': msg, 'annotation': map_ann.getValue()[0]})
+        else:
+            return JsonResponse({'error': 'Annotation not found'})
+    else:
+        # return shape not found
+        return JsonResponse({'error': 'Shape not found'})
+
 
 @login_required()
 def fastmal_roi_complete_tag(request, image_id, state, conn=None, **kwargs):
