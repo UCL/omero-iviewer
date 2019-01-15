@@ -218,6 +218,12 @@ def image_data(request, image_id, conn=None, **kwargs):
     try:
         rv = imageMarshal(image)
 
+        # FASt-Mal: we scale the pixel size by magnification metadata
+        if 'nominalMagnification' in rv and isinstance(rv['nominalMagnification'], float):
+            magnification = rv['nominalMagnification']
+        else:
+            magnification = 1.0
+
         # set roi count
         rv['roi_count'] = image.getROICount()
 
@@ -227,19 +233,19 @@ def image_data(request, image_id, conn=None, **kwargs):
         if (px is not None):
             size = image.getPixelSizeX(True)
             value = format_value_with_units(size)
-            rv['pixel_size']['unit_x'] = value[0]
+            rv['pixel_size']['unit_x'] = value[0] / magnification
             rv['pixel_size']['symbol_x'] = value[1]
         py = image.getPrimaryPixels().getPhysicalSizeY()
         if (py is not None):
             size = image.getPixelSizeY(True)
             value = format_value_with_units(size)
-            rv['pixel_size']['unit_y'] = value[0]
+            rv['pixel_size']['unit_y'] = value[0] / magnification
             rv['pixel_size']['symbol_y'] = value[1]
         pz = image.getPrimaryPixels().getPhysicalSizeZ()
         if (pz is not None):
             size = image.getPixelSizeZ(True)
             value = format_value_with_units(size)
-            rv['pixel_size']['unit_z'] = value[0]
+            rv['pixel_size']['unit_z'] = value[0] / magnification
             rv['pixel_size']['symbol_z'] = value[1]
 
         size_t = image.getSizeT()
