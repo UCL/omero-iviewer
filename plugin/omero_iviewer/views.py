@@ -234,12 +234,14 @@ def image_data(request, image_id, conn=None, **kwargs):
             size = image.getPixelSizeX(True)
             value = format_value_with_units(size)
             rv['pixel_size']['unit_x'] = value[0] / magnification
+            rv['pixel_size']['x'] = rv['pixel_size']['unit_x']
             rv['pixel_size']['symbol_x'] = value[1]
         py = image.getPrimaryPixels().getPhysicalSizeY()
         if (py is not None):
             size = image.getPixelSizeY(True)
             value = format_value_with_units(size)
             rv['pixel_size']['unit_y'] = value[0] / magnification
+            rv['pixel_size']['y'] = rv['pixel_size']['unit_y']
             rv['pixel_size']['symbol_y'] = value[1]
         pz = image.getPrimaryPixels().getPhysicalSizeZ()
         if (pz is not None):
