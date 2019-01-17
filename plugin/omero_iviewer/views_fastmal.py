@@ -184,6 +184,13 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
         params.map["iids"] = rlist([rlong(o) for o in set(image_ids)])
         params.map["oid"] = rlong(conn.getUser().getId())
 
+        sorted_images = qs.projection("""select i.id 
+                                         from Image as i 
+                                         where i.id in (%s) 
+                                         order by i.name""" % ','.join([str(x) for x in image_ids]), None, service_opts)
+        sorted_images = (r[0].getValue() for r in sorted_images)
+        image_ids = list(sorted_images)
+
         # 2. Get the summary ROI type counts across the dataset, for this user
         dataset_totals = qs.projection("""select s.textValue, count(s.textValue)
                 from Shape as s where s.roi.image in (
