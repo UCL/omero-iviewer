@@ -358,4 +358,35 @@ export default class FastMal {
     }
 
 
+    /**
+     * Returns HTML required for links to previous and next image in dataset
+     */
+    getLinkToPrevNext(currentId) {
+        let base_url = this.context.server + '/iviewer/?dataset=' + this.datasetRoiCounts['dataset_id'];
+        let currentIndex = this.datasetRoiCounts['image_ids'].indexOf(currentId);
+
+        // link to next image
+        let next_url = '';
+        let next_html = '';
+        if (currentIndex < this.datasetRoiCounts['image_ids'].length - 1) {
+            next_url = base_url + '&images=' + this.datasetRoiCounts['image_ids'][currentIndex + 1];
+            next_html = '<a style="color:white;" href="' + next_url +'">next</a>';
+        }
+
+        // link to previous image
+        let prev_url = '';
+        let prev_html = '';
+        if (currentIndex > 0) {
+            prev_url = base_url + '&images=' + this.datasetRoiCounts['image_ids'][currentIndex - 1];
+            prev_html = '<a style="color:white;" href="' + prev_url +'">previous</a>';
+        }
+
+        // put the two urls together
+        let delim = '';
+        if (next_url.length > 0 && prev_url.length > 0) {
+            delim = ', ';
+        }
+        return '( ' + prev_html + delim + next_html + ' )';
+    }
+
 }
