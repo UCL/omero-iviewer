@@ -91,7 +91,7 @@ export default class ThumbnailSlider extends EventSubscriber {
      * @memberof ThumbnailSlider
      * @type {number}
      */
-    thumbnails_request_size = 10;
+    thumbnails_request_size = 500;
 
     /**
      * the start index of the displayed thumbnails

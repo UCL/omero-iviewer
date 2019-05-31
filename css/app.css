@@ -472,8 +472,8 @@ a.ui-button:active,
 
 .thumbnail-panel {
     padding-top: 30px;
-    width: 100px;
-    max-width: 100px;
+    width: 220px;
+    max-width: 220px;
     text-align: center;
     overflow-x: hidden;
     overflow-y: hidden;

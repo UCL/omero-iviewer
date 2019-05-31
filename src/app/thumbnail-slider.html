@@ -41,15 +41,11 @@
     <div class="thumbnail-scroll-panel"
         show.bind="!requesting_thumbnail_data">
         <template repeat.for="thumb of thumbnails">
-        <img id="${'img-thumb-' + thumb.id}"
-             css="${image_config.image_info.image_id === thumb.id ?
-                 'border: 4px solid rgba(0,60,136,0.5)' : 'border: none'}"
-             src.bind="thumb.url + '?version=' + thumb.revision"
-             title="${thumb.title}"
-             alt="Not Found"
-             click.delegate="onClick(thumb.id)"/>
-        ${thumb.roiCounts} ${context.fastMal.getCompletedRoiIndicator(thumb.id)}
+             <div click.delegate="onClick(thumb.id)" style="${image_config.image_info.image_id === thumb.id ? 'font-weight: bold' : 'font-weight: normal'}"/>${thumb.title}:</div> ${thumb.roiCounts} ${context.fastMal.getCompletedRoiIndicator(thumb.id)}
         </template>
+        <br />
+        <br />
+        <br />
     </div>
     <div show.bind="thumbnails_end_index < thumbnails_count"
          click.delegate="requestMoreThumbnails(false, true)"
