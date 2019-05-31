@@ -472,7 +472,7 @@ a.ui-button:active,
 
 .thumbnail-panel {
     padding-top: 30px;
-    width: 220px;
+    width: 100px;
     max-width: 220px;
     text-align: center;
     overflow-x: hidden;
