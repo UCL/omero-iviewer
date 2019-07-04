@@ -114,16 +114,19 @@ export default class FastMal {
      * Returns the ROI types valid for this type of image
      */
     getRoiTypes() {
-        let image_info = this.context.getSelectedImageConfig().image_info
-        let dataset_name = image_info.dataset_name
+        if (this.context.getSelectedImageConfig() === null) {
+            return FastMal.THICK_FILM_ROI_TYPES;
+        }
+        let image_info = this.context.getSelectedImageConfig().image_info;
+        let dataset_name = image_info.dataset_name;
 
         // dataset names follow the format <FASTMAL_ID>-<F|S>-<A|B>-<PROJECT_ID>-<Timestamp>
         // the second to last item is the project suffix
-        let dataset_parts = dataset_name.split("-")
-        let project_suffix = dataset_parts[dataset_parts.length - 2]
+        let dataset_parts = dataset_name.split("-");
+        let project_suffix = dataset_parts[dataset_parts.length - 2];
 
         // get the first character of project suffix: 'F' or 'S'
-        let suffix_parts = project_suffix.split("")
+        let suffix_parts = project_suffix.split("");
         if (suffix_parts[0] === "S") {
             return FastMal.THIN_FILM_ROI_TYPES;
         } else {  // return thick film if "F" (or otherwise)
@@ -180,6 +183,7 @@ export default class FastMal {
      */
     getRoiTypeCountsForImage(image_id) {
         let roi_types = this.getRoiTypes();
+        this.fastmal_roi_types = this.getRoiTypes();
         let counts = [];
         if (image_id in this.datasetRoiCounts["images_with_rois"]) {
             let lookup = this.datasetRoiCounts["images_with_rois"][image_id.toString()];
