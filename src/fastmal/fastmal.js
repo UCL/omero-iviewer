@@ -55,17 +55,24 @@ export default class FastMal {
         ];
     }
 
-    /**
-     * NOTE: these are made up
-     */
     static get THIN_FILM_ROI_TYPES() {
         return [
             { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!',
                 description: 'No shape - only select', colour: "0,0,0"},
-            { id: 1, name: 'Interesting', code: 'FASTMAL:INTERESTING',
+            { id: 1, name: 'White cell', code: 'FASTMAL:WHITE_CELL',
                 description: '', colour: "102,194,165" },
-            { id: 2, name: 'Not interesting', code: 'FASTMAL:NOT INTERESTING',
+            { id: 2, name: 'White cell (CROWD)', code: 'FASTMAL:WHITE_CELL_CROWD',
+                description: '', colour: "102,194,164" },
+            { id: 3, name: 'Red blood cell', code: 'FASTMAL:RED_CELL',
                 description: '', colour:  "252,141,98"},
+            { id: 4, name: 'Read blood cell (CROWD)', code: 'FASTMAL:RED_CELL_CROWD',
+                description: '', colour:  "252,141,98"},
+            { id: 5, name: 'Infected red blood cell', code: 'FASTMAL:INFECTED_RED_CELL',
+                description: '', colour:  "252,141,98"},
+            { id: 6, name: 'Background', code: 'FASTMAL:BACKGROUND',
+                description: '', colour: "141,160,203"},
+            { id: 7, name: 'Ignore', code: 'FASTMAL:IGNORE',
+                description: '', colour: "231,138,195" },
         ];
     }
 
@@ -106,8 +113,21 @@ export default class FastMal {
      * Returns the ROI types valid for this type of image
      */
     getRoiTypes() {
-        // TODO: return either thick film or think film ROI types based on the dataset type
-        return FastMal.THICK_FILM_ROI_TYPES;
+        let image_info = this.context.getSelectedImageConfig().image_info
+        let dataset_name = image_info.dataset_name
+
+        // dataset names follow the format <FASTMAL_ID>-<F|S>-<A|B>-<PROJECT_ID>-<Timestamp>
+        // the second to last item is the project suffix
+        let dataset_parts = dataset_name.split("-")
+        let project_suffix = dataset_parts[dataset_parts.length - 2]
+
+        // get the first character of project suffix: 'F' or 'S'
+        let suffix_parts = project_suffix.split("")
+        if (suffix_parts[0] === "S") {
+            return FastMal.THIN_FILM_ROI_TYPES;
+        } else {  // return thick film if "F" (or otherwise)
+            return FastMal.THICK_FILM_ROI_TYPES;
+        }
     }
 
     /**
