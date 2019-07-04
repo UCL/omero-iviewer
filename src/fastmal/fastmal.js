@@ -79,7 +79,8 @@ export default class FastMal {
 
     constructor(context) {
         this.context = context;
-        this.fastmal_roi_types = this.getRoiTypes();
+        // by default, use thick film types
+        this.fastmal_roi_types = FastMal.THICK_FILM_ROI_TYPES;
         this.setUserInfo();
         console.log('Instantiated FastMal');
     }
@@ -157,6 +158,7 @@ export default class FastMal {
             this.fastmal_selected_roi_complete = false;
         }
         let counts = this.getRoiTypeCounts(regions_info);
+        this.fastmal_roi_types = this.getRoiTypes();
         let roi_types = this.getRoiTypes();
         let html = "";
         // total = ROI type counts for image; grandTotal = ROI type counts for dataset
