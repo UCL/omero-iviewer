@@ -68,7 +68,7 @@ export default class FastMal {
             { id: 4, name: 'Read blood cell (CROWD)', code: 'FASTMAL:RED_CELL_CROWD',
                 description: '', colour:  "252,141,98"},
             { id: 5, name: 'Infected red blood cell', code: 'FASTMAL:INFECTED_RED_CELL',
-                description: '', colour:  "252,141,98"},
+                description: '', colour:  "94,240,69"},
             { id: 6, name: 'Background', code: 'FASTMAL:BACKGROUND',
                 description: '', colour: "141,160,203"},
             { id: 7, name: 'Ignore', code: 'FASTMAL:IGNORE',
