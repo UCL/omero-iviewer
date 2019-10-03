@@ -13,6 +13,7 @@ FASTMAL_TAG_PREFIX = 'FASTMAL_'
 FASTMAL_DATASET_ANNOTATE_TAG = FASTMAL_TAG_PREFIX + 'ANNOTATE'
 FASTMAL_IMAGE_ANNOTATE_TAG = 'EDOF_RGB'
 FASTMAL_IMAGE_ROI_COMPLETE_TAG = FASTMAL_TAG_PREFIX + 'ROI_COMPLETE'
+FASTMAL_PROJECT_ROI_LABEL_FILENAME = 'FastmalRoiLabels.jsol'
 
 @login_required()
 def fastmal_shape_annotation(request, shape_id, key, value_new=None, conn=None, **kwargs):
@@ -235,6 +236,15 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
             """ % FASTMAL_IMAGE_ROI_COMPLETE_TAG, params, service_opts)
         images_roi_complete = {i[0].getValue(): 0 for i in images_roi_complete}
 
+        # 6. Get the ROI labels for this tree
+        # TODO: handle dataset being in multiple projects
+        project = dataset.getParent()
+        project_ann = project.listAnnotations()
+        file_ann = [pa for pa in project_ann 
+                if pa.OMERO_TYPE == omero.model.FileAnnotationI 
+                and pa.getFileName() == FASTMAL_PROJECT_ROI_LABEL_FILENAME]
+        label_jsol = "".join(file_ann[0].getFileInChunks())
+
         elapsed = timeit.default_timer() - start_time
 
         response = { 'image_ids': image_ids,
@@ -242,7 +252,9 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
                 'execution_time': elapsed,
                 'images_with_rois': rois_per_image,
                 'images_per_roi': images_per_roi,
-                'images_roi_complete': images_roi_complete}
+                'images_roi_complete': images_roi_complete,
+                'dataset_name': dataset.name,
+                'project_roi_labels': label_jsol}
 
         return JsonResponse(response)
     except Exception as dataset_rois_exception:
