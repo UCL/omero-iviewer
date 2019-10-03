@@ -4,6 +4,7 @@ import timeit
 from django.http import JsonResponse
 
 from omero.gateway import _ImageWrapper, TagAnnotationWrapper, MapAnnotationWrapper
+from omero.model import FileAnnotationI
 from omero.rtypes import rlong, rlist, rstring
 from omero.sys import Parameters
 from omeroweb.decorators import login_required
@@ -241,7 +242,7 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
         project = dataset.getParent()
         project_ann = project.listAnnotations()
         file_ann = [pa for pa in project_ann 
-                if pa.OMERO_TYPE == omero.model.FileAnnotationI 
+                if pa.OMERO_TYPE == FileAnnotationI 
                 and pa.getFileName() == FASTMAL_PROJECT_ROI_LABEL_FILENAME]
         label_jsol = "".join(file_ann[0].getFileInChunks())
 
