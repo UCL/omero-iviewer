@@ -21,10 +21,11 @@ export default class FastMal {
     /**
      * Used by regions-edit.html to bind the currently selected type
      */
-    fastmal_selected_roi_type = 0;
     fastmal_roi_types = null;
     fastmal_selected_roi_complete = null;
     fastmal_inprogress_images = [];
+
+    fastmal_roi_tree_element = null;
 
     /**
      * Stores the current active shape
@@ -192,8 +193,8 @@ export default class FastMal {
     /**
      * Triggered by regions-edit.js when user clicks on 'Select ROI' list
      */
-    fastmalRoiClick(event_in) {
-        return this.roiTypeSelected(event_in.target.model);
+    fastmalRoiClick(id) {
+        return this.roiTypeSelected(id);
     }
 
     /**
@@ -215,6 +216,17 @@ export default class FastMal {
     roiTypeSelected(type_id) {
         let regions_info = this.getRegionsInfo()
         let roi_types = this.getRoiTypes();
+
+        // deselect all nodes
+        var selected = this.fastmal_roi_tree_element.tree('getState').selected_node;
+        for (var i = 0; i < selected.length; i++) {
+            var node = this.fastmal_roi_tree_element.tree('getNodeById', selected[i]);
+            this.fastmal_roi_tree_element.tree('removeFromSelection', node);
+        }
+
+        // select only the selected node       
+        var node = this.fastmal_roi_tree_element.tree('getNodeById', type_id);
+        this.fastmal_roi_tree_element.tree('selectNode', node, { mustToggle: false });
 
         // If we're turning off ROI shapes (i.e. select mode)
         if (type_id == 0) {

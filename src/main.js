@@ -23,6 +23,7 @@ import Index from './app/index';
 import Misc from './utils/misc';
 import {URI_PREFIX, PLUGIN_NAME, WINDOWS_1252} from './utils/constants';
 import * as Bluebird from 'bluebird';
+import "jqtree";
 
 // global scope settings
 Bluebird.config({ warnings: { wForgottenReturn: false } });

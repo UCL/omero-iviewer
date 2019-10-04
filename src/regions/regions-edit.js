@@ -138,7 +138,7 @@ export default class RegionsEdit extends EventSubscriber {
         if (this.regions_info === null) return;
 
         // FASt-Mal: reset default selection for ROI type (0 = "off")
-        this.context.fastMal.fastmal_selected_roi_type = 0;
+        this.context.fastMal.roiTypeSelected(0); 
 
         let onceReady = () => {
             // register observer
@@ -195,6 +195,26 @@ export default class RegionsEdit extends EventSubscriber {
             $(this.element).find(".shape-font-size input");
         fontSizeSpinner.spinner({min: 1, disabled: true});
         fontSizeSpinner.spinner("value", 10);
+
+        // FASt-Mal: setup ROI label tree
+        const $tree = $('#tree1');
+        this.context.fastMal.fastmal_roi_tree_element = $tree;
+        
+        var data = this.context.fastMal.datasetRoiCounts.project_roi_labels;
+        $tree.tree({data: data});
+
+        function tree_click(c) {
+            return function(event) {
+                event.preventDefault();
+                var node = event.node;
+                c.fastMal.fastmalRoiClick(node.id);
+            }
+        }
+
+        $tree.on(
+            'tree.click',
+            tree_click(this.context)
+        );
     }
 
      /**

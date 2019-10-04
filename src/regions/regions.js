@@ -110,9 +110,7 @@ export default class Regions {
         if (!this.regions_info.ready) return;
 
         // turn off selected shape on save - seems to fix weird deleteShape problems
-        this.context.fastMal.fastmal_selected_roi_type = 0;
         this.context.fastMal.roiTypeSelected(0);
-
 
         this.context.publish(
             REGIONS_STORE_SHAPES,

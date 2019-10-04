@@ -201,6 +201,7 @@
             <arg value="${node_modules}/jquery-ui/themes/base/theme.css"/>
             <arg value="${node_modules}/jquery-ui/themes/base/spinner.css"/>
             <arg value="${node_modules}/jquery-ui/themes/base/slider.css"/>
+            <arg value="${node_modules}/jqtree/jqtree.css"/>
             <arg value="${node_modules}/bootstrap/dist/css/bootstrap.min.css"/>
             <arg value="${node_modules}/spectrum-colorpicker/spectrum.css"/>
             <arg value="${basedir}/css/ol3-viewer.css"/>
@@ -216,6 +217,7 @@
             <fileset file="${node_modules}/jquery-ui/themes/base/theme.css"/>
             <fileset file="${node_modules}/jquery-ui/themes/base/spinner.css"/>
             <fileset file="${node_modules}/jquery-ui/themes/base/slider.css"/>
+            <fileset file="${node_modules}/jqtree/jqtree.css"/>
             <fileset file="${node_modules}/bootstrap/dist/css/bootstrap.min.css"/>
             <fileset file="${node_modules}/spectrum-colorpicker/spectrum.css"/>
             <fileset file="${basedir}/css/ol3-viewer.css"/>
