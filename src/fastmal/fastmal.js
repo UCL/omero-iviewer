@@ -121,14 +121,14 @@ export default class FastMal {
         } else {
             this.fastmal_selected_roi_complete = false;
         }
-        let counts = this.getRoiTypeCounts(regions_info);
-        let roi_types = this.getRoiTypes();
+        const counts = this.getRoiTypeCounts(regions_info);
+        const roi_types = this.getRoiTypes();
         this.fastmal_roi_types = roi_types;
         let html = "";
         // total = ROI type counts for image; grandTotal = ROI type counts for dataset
         let total, grandTotal, iCount;
-        let datasetCounts = this.datasetRoiCounts['roi_type_count'];
-        let imageCounts = this.datasetRoiCounts['images_per_roi'];
+        const datasetCounts = this.datasetRoiCounts['roi_type_count'];
+        const imageCounts = this.datasetRoiCounts['images_per_roi'];
         for (let i = 1; i < roi_types.length; i++) {
             total = counts[roi_types[i].code] ? counts[roi_types[i].code] : 0;
             grandTotal = datasetCounts[roi_types[i].code] ? datasetCounts[roi_types[i].code] : 0;
@@ -143,11 +143,11 @@ export default class FastMal {
      * Used in thumbnail slider view
      */
     getRoiTypeCountsForImage(image_id) {
-        let roi_types = this.getRoiTypes();
+        const roi_types = this.getRoiTypes();
         this.fastmal_roi_types = roi_types;
         let counts = [];
         if (image_id in this.datasetRoiCounts["images_with_rois"]) {
-            let lookup = this.datasetRoiCounts["images_with_rois"][image_id.toString()];
+            const lookup = this.datasetRoiCounts["images_with_rois"][image_id.toString()];
             for (let i = 1; i < roi_types.length; i++) {
                 counts.push(lookup[roi_types[i].code] ? lookup[roi_types[i].code] : 0);
             }
@@ -186,7 +186,7 @@ export default class FastMal {
      * Get active regions_info via the Context
      */
     getRegionsInfo() {
-        let image_config = this.context.getSelectedImageConfig();
+        const image_config = this.context.getSelectedImageConfig();
         return image_config.regions_info;
     }
 
@@ -214,18 +214,18 @@ export default class FastMal {
      * Set regions drawing default for a given type
      */
     roiTypeSelected(type_id) {
-        let regions_info = this.getRegionsInfo()
-        let roi_types = this.getRoiTypes();
+        const regions_info = this.getRegionsInfo()
+        const roi_types = this.getRoiTypes();
 
         // deselect all nodes
-        var selected = this.fastmal_roi_tree_element.tree('getState').selected_node;
-        for (var i = 0; i < selected.length; i++) {
-            var node = this.fastmal_roi_tree_element.tree('getNodeById', selected[i]);
+        const selected = this.fastmal_roi_tree_element.tree('getState').selected_node;
+        for (let i = 0; i < selected.length; i++) {
+            const node = this.fastmal_roi_tree_element.tree('getNodeById', selected[i]);
             this.fastmal_roi_tree_element.tree('removeFromSelection', node);
         }
 
         // select only the selected node       
-        var node = this.fastmal_roi_tree_element.tree('getNodeById', type_id);
+        const node = this.fastmal_roi_tree_element.tree('getNodeById', type_id);
         this.fastmal_roi_tree_element.tree('selectNode', node, { mustToggle: false });
 
         // If we're turning off ROI shapes (i.e. select mode)
@@ -238,7 +238,7 @@ export default class FastMal {
 
         regions_info.shape_defaults.Text = roi_types[type_id].code;
 
-        let rgb_string = 'rgb(' + roi_types[type_id].colour + ')';
+        const rgb_string = 'rgb(' + roi_types[type_id].colour + ')';
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
 
         this.context.publish(FASTMAL_SELECTED, {shape_id: this.fastmal_last_active_shape}); // fires regions-drawing.onDrawShape()
@@ -293,8 +293,8 @@ export default class FastMal {
      * Lsit of in progress images
      */
     setInProgressImageIds() {
-        var image_ids = [];
-        for (var image_id in this.datasetRoiCounts['images_with_rois']) {
+        let image_ids = [];
+        for (let image_id in this.datasetRoiCounts['images_with_rois']) {
             if (!(image_id in this.datasetRoiCounts['images_roi_complete'])) {
                 image_ids.push(image_id);
             }
@@ -306,7 +306,7 @@ export default class FastMal {
      * Handles the updating of the range in CROWD roi annotation
      */
     updateCrowdRange(shape, event_in) {
-        let shape_id = shape['@id'];
+        const shape_id = shape['@id'];
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
             url : '/iviewer/fastmal_shape_annotation/' + shape_id + '/CrowdRange/' + event_in.target.value + '/',
@@ -337,8 +337,7 @@ export default class FastMal {
      * Gets crowd range annotation, if any, for a given shape
      */
     getCrowdRange(shape, element) {
-        let shape_id = shape['@id'];
-        let return_msg = "";
+        const shape_id = shape['@id'];
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
             url : '/iviewer/fastmal_shape_annotation/' + shape_id + '/CrowdRange/',
@@ -368,8 +367,8 @@ export default class FastMal {
      * Returns HTML required for links to previous and next image in dataset
      */
     getLinkToPrevNext(currentId) {
-        let base_url = '/iviewer/?dataset=' + this.datasetRoiCounts['dataset_id'];
-        let currentIndex = this.datasetRoiCounts['image_ids'].indexOf(currentId);
+        const base_url = '/iviewer/?dataset=' + this.datasetRoiCounts['dataset_id'];
+        const currentIndex = this.datasetRoiCounts['image_ids'].indexOf(currentId);
 
         // link to next image
         let next_url = '';
