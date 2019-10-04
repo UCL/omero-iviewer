@@ -1,3 +1,4 @@
+import ast
 from collections import defaultdict
 import timeit
 
@@ -14,7 +15,7 @@ FASTMAL_TAG_PREFIX = 'FASTMAL_'
 FASTMAL_DATASET_ANNOTATE_TAG = FASTMAL_TAG_PREFIX + 'ANNOTATE'
 FASTMAL_IMAGE_ANNOTATE_TAG = 'EDOF_RGB'
 FASTMAL_IMAGE_ROI_COMPLETE_TAG = FASTMAL_TAG_PREFIX + 'ROI_COMPLETE'
-FASTMAL_PROJECT_ROI_LABEL_FILENAME = 'FastmalRoiLabels.jsol'
+FASTMAL_PROJECT_ROI_LABEL_SUFFIX = '_RoiLabels.json'
 
 @login_required()
 def fastmal_shape_annotation(request, shape_id, key, value_new=None, conn=None, **kwargs):
@@ -241,10 +242,13 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
         # TODO: handle dataset being in multiple projects
         project = dataset.getParent()
         project_ann = project.listAnnotations()
+        label_filename = project.name + FASTMAL_PROJECT_ROI_LABEL_SUFFIX
         file_ann = [pa for pa in project_ann 
                 if pa.OMERO_TYPE == FileAnnotationI 
-                and pa.getFileName() == FASTMAL_PROJECT_ROI_LABEL_FILENAME]
-        label_jsol = "".join(file_ann[0].getFileInChunks())
+                and pa.getFileName() == label_filename]
+        label_json = "".join(file_ann[0].getFileInChunks())
+        label_json = label_json.replace('\n', '')
+        label_json = ast.literal_eval(label_json)
 
         elapsed = timeit.default_timer() - start_time
 
@@ -255,7 +259,7 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
                 'images_per_roi': images_per_roi,
                 'images_roi_complete': images_roi_complete,
                 'dataset_name': dataset.name,
-                'project_roi_labels': label_jsol}
+                'project_roi_labels': label_json}
 
         return JsonResponse(response)
     except Exception as dataset_rois_exception:

@@ -36,51 +36,25 @@ export default class FastMal {
      */
     datasetRoiCounts = null;
 
-    static get THICK_FILM_ROI_TYPES() {
+    /**
+     * A list of nice colours to use for ROIs
+     */
+    lineColours = [ "230,25,75", "60,180,75", "255,225,25", "0,130,200", 
+        "245,130,48", "145,30,180", "70,240,240", "240,50,230", 
+        "210,245,60", "250,190,190", "0,128,128", "230,190,255", 
+        "170,110,40", "255,250,200", "128,0,0", "170,255,195", 
+        "128,128,0", "255,215,180", "0,0,128", "128,128,128" ];
+
+    static get NO_ROI_LABELS_DEFINED() {
         return [
-            { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!',
-                description: 'No shape - only select', colour: "0,0,0"},
-            { id: 1, name: 'White cell', code: 'FASTMAL:WHITE_CELL',
-                description: '', colour: "102,194,165" },
-            { id: 2, name: 'White cell (CROWD)', code: 'FASTMAL:WHITE_CELL_CROWD',
-                description: '', colour: "102,194,164" },
-            { id: 3, name: 'Parasite', code: 'FASTMAL:PARASITE',
-                description: '', colour:  "252,141,98"},
-            { id: 4, name: 'Parasite (CROWD)', code: 'FASTMAL:PARASITE_CROWD',
-                description: '', colour:  "252,141,98"},
-            { id: 5, name: 'Background', code: 'FASTMAL:BACKGROUND',
-                description: '', colour: "141,160,203"},
-            { id: 6, name: 'Ignore', code: 'FASTMAL:IGNORE',
-                description: '', colour: "231,138,195" },
+            { name: 'Off', code: 'FASTMAL:NULL', id: 0 }
         ];
     }
-
-    static get THIN_FILM_ROI_TYPES() {
-        return [
-            { id: 0, name: 'Off', code: 'FASTMAL:ERROR_SELECTION_ROI!',
-                description: 'No shape - only select', colour: "0,0,0"},
-            { id: 1, name: 'White cell', code: 'FASTMAL:WHITE_CELL',
-                description: '', colour: "102,194,165" },
-            { id: 2, name: 'White cell (CROWD)', code: 'FASTMAL:WHITE_CELL_CROWD',
-                description: '', colour: "102,194,164" },
-            { id: 3, name: 'Red blood cell', code: 'FASTMAL:RED_CELL',
-                description: '', colour:  "252,141,98"},
-            { id: 4, name: 'Read blood cell (CROWD)', code: 'FASTMAL:RED_CELL_CROWD',
-                description: '', colour:  "252,141,98"},
-            { id: 5, name: 'Infected red blood cell', code: 'FASTMAL:INFECTED_RED_CELL',
-                description: '', colour:  "94,240,69"},
-            { id: 6, name: 'Background', code: 'FASTMAL:BACKGROUND',
-                description: '', colour: "141,160,203"},
-            { id: 7, name: 'Ignore', code: 'FASTMAL:IGNORE',
-                description: '', colour: "231,138,195" },
-        ];
-    }
-
 
     constructor(context) {
         this.context = context;
         // by default, use thick film types
-        this.fastmal_roi_types = FastMal.THICK_FILM_ROI_TYPES;
+        this.fastmal_roi_types = FastMal.NO_ROI_LABELS_DEFINED;
         this.setUserInfo();
         console.log('Instantiated FastMal');
     }
@@ -94,6 +68,8 @@ export default class FastMal {
     setUserInfo() {
         $.ajax({
             url : '/iviewer/fastmal_user/',
+            type: 'GET',
+            dataType: 'json',
             async : true,
             success : (response) => {
                 try {
@@ -102,10 +78,12 @@ export default class FastMal {
                     console.error("Failed to userInfo");
                     this.userInfo = err.responseJSON;
                 }
-            }, error : (error) => {
-                console.error("Failed to load userInfo")
-                this.userInfo = error.responseJSON;
-            }
+            }, 
+             error: (jqxhr, status, exception) => {
+                console.error("Failed to load userInfo");
+                console.error(`jqxhr[${jqxhr}]; status[${status}]; exception[${exception}];`);
+                this.userInfo = exception;
+             }
         });
     }
 
@@ -114,24 +92,7 @@ export default class FastMal {
      * Returns the ROI types valid for this type of image
      */
     getRoiTypes() {
-        if (this.context.getSelectedImageConfig() === null) {
-            return FastMal.THICK_FILM_ROI_TYPES;
-        }
-        let image_info = this.context.getSelectedImageConfig().image_info;
-        let dataset_name = image_info.dataset_name;
-
-        // dataset names follow the format <FASTMAL_ID>-<F|S>-<A|B>-<PROJECT_ID>-<Timestamp>
-        // the second to last item is the project suffix
-        let dataset_parts = dataset_name.split("-");
-        let project_suffix = dataset_parts[dataset_parts.length - 2];
-
-        // get the first character of project suffix: 'F' or 'S'
-        let suffix_parts = project_suffix.split("");
-        if (suffix_parts[0] === "S") {
-            return FastMal.THIN_FILM_ROI_TYPES;
-        } else {  // return thick film if "F" (or otherwise)
-            return FastMal.THICK_FILM_ROI_TYPES;
-        }
+        return this.datasetRoiCounts.project_roi_labels;
     }
 
     /**
@@ -141,8 +102,7 @@ export default class FastMal {
         let data = regions_info.data;
         let count = {};
         data.forEach(
-            (value) =>
-                value.shapes.forEach(
+            (value) => value.shapes.forEach(
                     (value) => {
                         let code = value.Text;
                         count[code] = count[code] ? count[code] + 1 : 1;
@@ -161,8 +121,8 @@ export default class FastMal {
             this.fastmal_selected_roi_complete = false;
         }
         let counts = this.getRoiTypeCounts(regions_info);
-        this.fastmal_roi_types = this.getRoiTypes();
         let roi_types = this.getRoiTypes();
+        this.fastmal_roi_types = roi_types;
         let html = "";
         // total = ROI type counts for image; grandTotal = ROI type counts for dataset
         let total, grandTotal, iCount;
@@ -183,7 +143,7 @@ export default class FastMal {
      */
     getRoiTypeCountsForImage(image_id) {
         let roi_types = this.getRoiTypes();
-        this.fastmal_roi_types = this.getRoiTypes();
+        this.fastmal_roi_types = roi_types;
         let counts = [];
         if (image_id in this.datasetRoiCounts["images_with_rois"]) {
             let lookup = this.datasetRoiCounts["images_with_rois"][image_id.toString()];
@@ -203,8 +163,7 @@ export default class FastMal {
      */
     updateRoiCompleteTag(state) {
         $.ajax({
-            url : this.context.server +
-                '/iviewer/fastmal_roi_complete_tag/' + this.getRegionsInfo().image_info.image_id + '/' + state + '/',
+            url : '/iviewer/fastmal_roi_complete_tag/' + this.getRegionsInfo().image_info.image_id + '/' + state + '/',
             success : (response) => {
                 try {
                     console.log('Successfully set tag');
@@ -285,14 +244,25 @@ export default class FastMal {
 
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
-            url : this.context.server +
-                '/iviewer/fastmal_data/' + dataset_id + '/',
+            url : '/iviewer/fastmal_data/' + dataset_id + '/',
             async : async, // appara
+            dataType: 'json',
             success : (response) => {
                 try {
                     this.datasetRoiCounts = response;
                     this.datasetRoiCounts['dataset_id'] = dataset_id;
                     this.setInProgressImageIds();
+
+                    // add "off" to the project roi labels
+                    this.datasetRoiCounts.project_roi_labels.unshift(
+                        { "name": "Off", "code": "FASTMAL:NULL", "id": 0 }
+                    );
+                    // give each top-level roi label an id and a colour
+                    for (let i = 1; i < this.datasetRoiCounts.project_roi_labels.length; i++) {
+                        this.datasetRoiCounts.project_roi_labels[i]["colour"] = this.lineColours[i];
+                        this.datasetRoiCounts.project_roi_labels[i]["id"] = i;
+                    }
+
                     this.context.publish(FASTMAL_COUNT_UPDATE, {}); // fires regions-list.updateRoiCounts()
                     this.context.publish(FASTMAL_THUMBNAIL_REFRESH, {});
                 } catch(err) {
@@ -327,8 +297,7 @@ export default class FastMal {
         let shape_id = shape['@id'];
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
-            url : this.context.server +
-                '/iviewer/fastmal_shape_annotation/' + shape_id + '/CrowdRange/' + event_in.target.value + '/',
+            url : '/iviewer/fastmal_shape_annotation/' + shape_id + '/CrowdRange/' + event_in.target.value + '/',
             async : true,
             success : (response) => {
                 try {
@@ -360,8 +329,7 @@ export default class FastMal {
         let return_msg = "";
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
-            url : this.context.server +
-                '/iviewer/fastmal_shape_annotation/' + shape_id + '/CrowdRange/',
+            url : '/iviewer/fastmal_shape_annotation/' + shape_id + '/CrowdRange/',
             async : true,
             success : (response) => {
                 try {
@@ -388,7 +356,7 @@ export default class FastMal {
      * Returns HTML required for links to previous and next image in dataset
      */
     getLinkToPrevNext(currentId) {
-        let base_url = this.context.server + '/iviewer/?dataset=' + this.datasetRoiCounts['dataset_id'];
+        let base_url = '/iviewer/?dataset=' + this.datasetRoiCounts['dataset_id'];
         let currentIndex = this.datasetRoiCounts['image_ids'].indexOf(currentId);
 
         // link to next image

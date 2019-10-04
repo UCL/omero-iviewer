@@ -175,8 +175,6 @@ export default class Context {
         this.eventbus = eventbus;
         this.initParams = params;
 
-        this.fastMal = new FastMal(this);
-
         // process inital request params and assign members
         this.processInitialParameters();
         this.readPrefixedURIs();
@@ -195,6 +193,8 @@ export default class Context {
 
         // set up luts
         this.setUpLuts();
+
+        this.fastMal = new FastMal(this);
 
         // open what we received as inital parameter
         this.openWithInitialParams();

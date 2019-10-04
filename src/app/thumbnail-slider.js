@@ -542,7 +542,6 @@ export default class ThumbnailSlider extends EventSubscriber {
      * @param {number} image_id the image id for the clicked thumbnail
      */
     onClick(image_id) {
-        console.log('handling click ' + image_id);
         let navigateToNewImage = () => {
             this.context.rememberImageConfigChange(image_id);
             let parent_id =
