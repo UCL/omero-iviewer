@@ -75,13 +75,14 @@
         </div>
 
         <!-- FASt-Mal: display ROI type selection radio buttons -->
-        <div style="float: left; padding-top: 15px; height: 290px;">
+        <div style="float: left; padding-top: 15px;">
             Select ROI:<br /><br />
 
             <div id="tree1"></div>
 
 
 
+            <br /><br />
             <label><input type="checkbox" checked.bind="context.fastMal.fastmal_selected_roi_complete" name="fastmal_roi_complete" click.delegate="context.fastMal.updateRoiCompleteTag($event.target.checked)" /> ROI annotation complete</label>
             <br />
         </div>

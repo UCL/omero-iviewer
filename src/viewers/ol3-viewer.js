@@ -743,6 +743,11 @@ export default class Ol3Viewer extends EventSubscriber {
                 ids.push(id);
                 let oldRoiAndShapeId = Converters.extractRoiAndShapeId(id);
                 let newRoiAndShapeId = Converters.extractRoiAndShapeId(syncId);
+
+                // FASt-Mal: save secondary labels as CommentAnnotations on Roi
+                console.log('linkRoiComment', [newRoiAndShapeId.roi_id, id]);
+                this.context.fastMal.linkRoiComment(newRoiAndShapeId.roi_id, id);
+
                 // we reset modifed and stats
                 shape.modified = false;
                 shape.stats = null;

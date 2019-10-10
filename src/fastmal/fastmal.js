@@ -27,6 +27,8 @@ export default class FastMal {
 
     fastmal_roi_tree_element = null;
 
+    fastmal_shape_labels = { };
+
     /**
      * Stores the current active shape
      */
@@ -36,6 +38,8 @@ export default class FastMal {
      * Holds the ROI information about a given dataset
      */
     datasetRoiCounts = null;
+
+    userInfo = null;
 
     /**
      * A list of nice colours to use for ROIs
@@ -48,7 +52,7 @@ export default class FastMal {
 
     static get NO_ROI_LABELS_DEFINED() {
         return [
-            { name: 'Off', code: 'FASTMAL:NULL', id: 0 }
+            { name: 'Off', id: 'FASTMAL:OFF' }
         ];
     }
 
@@ -57,10 +61,8 @@ export default class FastMal {
         // by default, use thick film types
         this.fastmal_roi_types = FastMal.NO_ROI_LABELS_DEFINED;
         this.setUserInfo();
-        console.log('Instantiated FastMal');
+        console.log('Instantiated FastMal', this);
     }
-
-    userInfo = null;
 
     /**
      * Requests the logged in user's information and stores it locally
@@ -88,6 +90,22 @@ export default class FastMal {
         });
     }
 
+    /**
+     * Save the secondary labels for a given shape
+     * The shape_id is the "old id" used whilst drawing
+     */
+    saveShapeLabel(shape_id, label_set) {
+        console.log('saveShapeLabel', [shape_id, label_set]);
+        if (shape_id in this.fastmal_shape_labels) {
+            console.err("shape_id " + shape_id + " already exists fastmal_shape_labels");
+            console.log(this.fastmal_shape_labels);
+        } else {
+            if (label_set.size > 0) {
+                console.log('saved shaped label for ' + shape_id, label_set);
+                this.fastmal_shape_labels[shape_id] = new Set(label_set);
+            }
+        }
+    }
 
     /**
      * Returns the ROI types valid for this type of image
@@ -214,8 +232,23 @@ export default class FastMal {
      * Set regions drawing default for a given type
      */
     roiTypeSelected(type_id) {
+        const node_level = this.fastmal_roi_tree_element.tree('getNodeById', type_id).getLevel();
+
+        if (node_level == 1) {
+            return this.roiPrimaryLabelSelected(type_id);
+        } else if (node_level == 2) {
+            return this.roiSecondaryLabelSelected(type_id);
+        } else {
+            console.err("do not know how to handle level " + node_level + " node");
+            return false;
+        }
+    }
+
+    /**
+     * handles selection of top-level roi label
+     */
+    roiPrimaryLabelSelected(type_id) {
         const regions_info = this.getRegionsInfo()
-        const roi_types = this.getRoiTypes();
 
         // deselect all nodes
         const selected = this.fastmal_roi_tree_element.tree('getState').selected_node;
@@ -229,20 +262,57 @@ export default class FastMal {
         this.fastmal_roi_tree_element.tree('selectNode', node, { mustToggle: false });
 
         // If we're turning off ROI shapes (i.e. select mode)
-        if (type_id == 0) {
+        if (type_id == "FASTMAL:OFF") {
             regions_info.shape_defaults.Text = '';
             regions_info.shape_to_be_drawn = null;
+            regions_info.shape_defaults.FastMal_Text = new Set();
             this.context.publish(FASTMAL_DESELECTED, {}); // fires regions-drawing.onDrawShape()
             return true;
         }
 
-        regions_info.shape_defaults.Text = roi_types[type_id].code;
+        regions_info.shape_defaults.Text = type_id; 
+        regions_info.shape_defaults.FastMal_Text = new Set();
 
-        const rgb_string = 'rgb(' + roi_types[type_id].colour + ')';
+        const selected_node = this.fastmal_roi_tree_element.tree('getNodeById', type_id);    
+        const rgb_string = 'rgb(' + selected_node.colour + ')';
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
 
         this.context.publish(FASTMAL_SELECTED, {shape_id: this.fastmal_last_active_shape}); // fires regions-drawing.onDrawShape()
         return true;
+    }
+
+    /**
+     * handles selection of sub-level roi label
+     */
+    roiSecondaryLabelSelected(type_id) {
+        const regions_info = this.getRegionsInfo();
+
+        // get the node that user wants to select (target node)
+        const target_node = this.fastmal_roi_tree_element.tree('getNodeById', type_id);
+        const target_parent_node = target_node.parent;
+
+        // if the target node is currently selected
+        if (this.fastmal_roi_tree_element.tree('isNodeSelected', target_node)) {
+            // turn off selection
+            this.fastmal_roi_tree_element.tree('removeFromSelection', target_node);
+            regions_info.shape_defaults.FastMal_Text.delete(type_id);
+            this.context.publish(FASTMAL_SELECTED, {shape_id: this.fastmal_last_active_shape}); // fires regions-drawing.onDrawShape()
+            console.log('1: ', regions_info.shape_defaults.FastMal_Text);
+            return true;
+        }
+        
+        // if the parent node is currently the selected node
+        if (this.fastmal_roi_tree_element.tree('isNodeSelected', target_parent_node)) {
+            // allow use to select (on/off) the target node
+            this.fastmal_roi_tree_element.tree('addToSelection', target_node);
+            regions_info.shape_defaults.FastMal_Text.add(type_id);
+            this.context.publish(FASTMAL_SELECTED, {shape_id: this.fastmal_last_active_shape}); // fires regions-drawing.onDrawShape()
+            console.log('2: ', regions_info.shape_defaults.FastMal_Text);
+            return true;
+        } else {
+            // prevent user from selecting this node
+            return false;
+        }
     }
 
     /**
@@ -267,12 +337,11 @@ export default class FastMal {
 
                     // add "off" to the project roi labels
                     this.datasetRoiCounts.project_roi_labels.unshift(
-                        { "name": "Off", "code": "FASTMAL:NULL", "id": 0 }
+                        { "name": "Off", "id": "FASTMAL:OFF" }
                     );
                     // give each top-level roi label an id and a colour
                     for (let i = 1; i < this.datasetRoiCounts.project_roi_labels.length; i++) {
                         this.datasetRoiCounts.project_roi_labels[i]["colour"] = this.lineColours[i];
-                        this.datasetRoiCounts.project_roi_labels[i]["id"] = i;
                     }
 
                     this.context.publish(FASTMAL_COUNT_UPDATE, {}); // fires regions-list.updateRoiCounts()
@@ -392,6 +461,35 @@ export default class FastMal {
             delim = ', ';
         }
         return '( ' + prev_html + delim + next_html + ' )';
+    }
+
+    linkRoiComment(roiId, key) {
+        if (!(key in this.fastmal_shape_labels)) {
+            return;
+        }
+
+        let labels = Array.from(this.fastmal_shape_labels[key]);
+
+        if (labels.length == 0) {
+            return;
+        }
+
+        labels = labels.join();
+
+        $.ajax({
+            url : '/iviewer/fastmal_roi_comment/' + roiId + '/' + labels + '/',
+            async : true,
+            success : (response) => {
+                try {
+                    console.log("Successfully saved " + labels + " labels to roi " + roiId);
+                } catch(err) {
+                    console.error("Error linking roi to comments");
+                }
+            }, 
+            error : (error) => {
+                console.error("Error linking roi to comments")
+            }
+        });
     }
 
 }

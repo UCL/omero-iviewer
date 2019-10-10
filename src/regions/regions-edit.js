@@ -137,8 +137,8 @@ export default class RegionsEdit extends EventSubscriber {
     waitForRegionsInfoReady() {
         if (this.regions_info === null) return;
 
-        // FASt-Mal: reset default selection for ROI type (0 = "off")
-        this.context.fastMal.roiTypeSelected(0); 
+        // FASt-Mal: reset default selection for ROI type
+        this.context.fastMal.roiTypeSelected("FASTMAL:OFF"); 
 
         let onceReady = () => {
             // register observer
@@ -401,7 +401,7 @@ export default class RegionsEdit extends EventSubscriber {
             } else this.regions_info.drawing_mode =
                         REGIONS_DRAWING_MODE.PRESENT_Z_AND_T;
 
-            return;
+            returnr
         }
         // selected shape(s) need changing
         let prop = 'The' + upperDim;

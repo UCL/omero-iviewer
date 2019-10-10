@@ -187,6 +187,7 @@ export default class RegionsDrawing extends EventSubscriber {
             // check whether we need a new shapes map:
             // this is the case for newly drawn shapes but not propagated ones
             let shapes = this.regions_info.data.get(roi_id);
+
             if (typeof shapes !== 'undefined' && shapes.shapes instanceof Map)
                 shapes = shapes.shapes;
             else {
@@ -241,6 +242,10 @@ export default class RegionsDrawing extends EventSubscriber {
                 shape: generatedShapes[len-1]
             });
 
+        // FASt-Mal: save the currently selected second-level labels for this shape
+        console.log('regiondrawing', [generatedShapes[len-1]['shape_id'], this.regions_info.shape_defaults.FastMal_Text]);
+        this.context.fastMal.saveShapeLabel(generatedShapes[len-1]['shape_id'], this.regions_info.shape_defaults.FastMal_Text);
+        
         // we only continue if we have been drawn and intend to propagate
         if (params.drawn)
             this.onDrawShape(
@@ -307,8 +312,16 @@ export default class RegionsDrawing extends EventSubscriber {
 
         // define shape to be drawn including any pre-set defaults (e.g. colors)
         let def =  {type: this.regions_info.shape_to_be_drawn};
-        for (let s in this.regions_info.shape_defaults)
-            def[s] = this.regions_info.shape_defaults[s];
+        for (let s in this.regions_info.shape_defaults) {
+            if (s == "FastMal_Text") {
+                def["FastMal_Text"] = new Set(this.regions_info.shape_defaults[s]);
+            } else {
+                def[s] = this.regions_info.shape_defaults[s];
+            }
+        }
+
+        // save the shape_default for this shape
+        const roi_id = this.regions_info.getNewRegionsId();
 
         // send drawing notification to ol3 viewer
         this.context.publish(
@@ -316,7 +329,7 @@ export default class RegionsDrawing extends EventSubscriber {
                config_id: this.regions_info.image_info.config_id,
                shape : def, abort: abort,
                hist_id: this.regions_info.history.getHistoryId(),
-               roi_id: this.regions_info.getNewRegionsId()});
+               roi_id: roi_id});
     }
 
     /**
