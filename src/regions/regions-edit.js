@@ -138,7 +138,7 @@ export default class RegionsEdit extends EventSubscriber {
         if (this.regions_info === null) return;
 
         // FastMal: reset default selection for ROI type
-        this.context.fastMal.roiTypeSelected("FASTMAL:OFF"); 
+        this.context.fastMal.annotationsTreeClick("FASTMAL:OFF");
 
         let onceReady = () => {
             // register observer

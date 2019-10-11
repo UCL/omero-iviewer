@@ -130,16 +130,16 @@ export default class FastMal {
     }
 
     /**
-     * Returns the ROI types valid for this type of image
+     * Returns the ROI types valid for the currently loaded dataset
      */
-    getRoiTypes() {
+    getRoiLabels() {
         return this.datasetRoiInfo.project_roi_labels;
     }
 
     /**
      * Iterates over all ROIs in regions_info and tallies the ROI Type
      */
-    getRoiTypeCounts(regions_info) {
+    countRoiLabels(regions_info) {
         let data = regions_info.data;
         let count = {};
         data.forEach(
@@ -155,14 +155,15 @@ export default class FastMal {
     /**
      * Called by regions-list.js when ROI list changes.
      */
-    getRoiTypeCountsHTML(regions_info) {
+    getRoiLabelCountsHTML(regions_info) {
+        // Is the currently select image linked to the FASTMAL_ROI_COMPLETE tag
         if (this.context.getSelectedImageConfig().image_info.image_id.toString() in this.datasetRoiInfo['images_roi_complete']) {
             this.roiAnnotationComplete = true;
         } else {
             this.roiAnnotationComplete = false;
         }
-        const counts = this.getRoiTypeCounts(regions_info);
-        const roiTypes = this.getRoiTypes();
+        const counts = this.countRoiLabels(regions_info);
+        const roiTypes = this.getRoiLabels();
         this.roiTypes = roiTypes;
         let html = "";
         // total = ROI type counts for image; grandTotal = ROI type counts for dataset
@@ -182,8 +183,8 @@ export default class FastMal {
      * Return an array counting counts of each ROI type for a given image ID
      * Used in thumbnail slider view
      */
-    getRoiTypeCountsForImage(image_id) {
-        const roiTypes = this.getRoiTypes();
+    getRoiLabelCountsForImage(image_id) {
+        const roiTypes = this.getRoiLabels();
         this.roiTypes = roiTypes;
         let counts = [];
         if (image_id in this.datasetRoiInfo["images_with_rois"]) {
@@ -208,7 +209,7 @@ export default class FastMal {
             success : (response) => {
                 try {
                     console.log('Successfully set tag');
-                    this.refreshDatasetRoiCounts(null);
+                    this.refreshDatasetRoiInfo(null);
                     return true;
                 } catch(err) {
                     console.error("Failed to set tag");
@@ -225,15 +226,7 @@ export default class FastMal {
      * Get active regions_info via the Context
      */
     getRegionsInfo() {
-        const image_config = this.context.getSelectedImageConfig();
-        return image_config.regions_info;
-    }
-
-    /**
-     * Triggered by regions-edit.js when user clicks on 'Select ROI' list
-     */
-    annotationsTreeClick(id) {
-        return this.roiTypeSelected(id);
+        return this.context.getSelectedImageConfig().regions_info;
     }
 
     /**
@@ -250,17 +243,18 @@ export default class FastMal {
     }
 
     /**
+     * Triggered by regions-edit.js when user clicks on 'Select ROI' list
      * Set regions drawing default for a given type
      */
-    roiTypeSelected(type_id) {
-        const node_level = this.annotationsTree.tree('getNodeById', type_id).getLevel();
+    annotationsTreeClick(node_id) {
+        const node_level = this.annotationsTree.tree('getNodeById', node_id).getLevel();
 
-        if (node_level == 1) {
-            return this.roiPrimaryLabelSelected(type_id);
-        } else if (node_level == 2) {
-            return this.roiSecondaryLabelSelected(type_id);
+        if (node_level === 1) {
+            return this.primaryLabelClicked(node_id);
+        } else if (node_level === 2) {
+            return this.secondaryLabelClicked(node_id);
         } else {
-            console.err("do not know how to handle level " + node_level + " node");
+            console.err("Do not know how to handle level " + node_level + " node");
             return false;
         }
     }
@@ -268,8 +262,8 @@ export default class FastMal {
     /**
      * handles selection of top-level roi label
      */
-    roiPrimaryLabelSelected(type_id) {
-        const regions_info = this.getRegionsInfo()
+    primaryLabelClicked(node_id) {
+        const regions_info = this.getRegionsInfo();
 
         // deselect all nodes
         const selected = this.annotationsTree.tree('getState').selected_node;
@@ -286,12 +280,12 @@ export default class FastMal {
         }
 
         // select ond open only the selected node       
-        const node = this.annotationsTree.tree('getNodeById', type_id);
+        const node = this.annotationsTree.tree('getNodeById', node_id);
         this.annotationsTree.tree('selectNode', node, { mustToggle: false });
         this.annotationsTree.tree('openNode', node);
 
         // If we're turning off ROI shapes (i.e. select mode)
-        if (type_id == "FASTMAL:OFF") {
+        if (node_id === "FASTMAL:OFF") {
             regions_info.shape_defaults.Text = '';
             regions_info.shape_to_be_drawn = null;
             regions_info.shape_defaults.FastMal_Text = new Set();
@@ -299,10 +293,10 @@ export default class FastMal {
             return true;
         }
 
-        regions_info.shape_defaults.Text = type_id; 
+        regions_info.shape_defaults.Text = node_id;
         regions_info.shape_defaults.FastMal_Text = new Set();
 
-        const selected_node = this.annotationsTree.tree('getNodeById', type_id);
+        const selected_node = this.annotationsTree.tree('getNodeById', node_id);
         const rgb_string = 'rgb(' + selected_node.colour + ')';
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
 
@@ -313,18 +307,18 @@ export default class FastMal {
     /**
      * handles selection of sub-level roi label
      */
-    roiSecondaryLabelSelected(type_id) {
+    secondaryLabelClicked(node_id) {
         const regions_info = this.getRegionsInfo();
 
         // get the node that user wants to select (target node)
-        const target_node = this.annotationsTree.tree('getNodeById', type_id);
+        const target_node = this.annotationsTree.tree('getNodeById', node_id);
         const target_parent_node = target_node.parent;
 
         // if the target node is currently selected
         if (this.annotationsTree.tree('isNodeSelected', target_node)) {
             // turn off selection
             this.annotationsTree.tree('removeFromSelection', target_node);
-            regions_info.shape_defaults.FastMal_Text.delete(type_id);
+            regions_info.shape_defaults.FastMal_Text.delete(node_id);
             this.context.publish(FASTMAL_SELECTED, {shape_id: this.lastActiveShape}); // fires regions-drawing.onDrawShape()
             console.log('1: ', regions_info.shape_defaults.FastMal_Text);
             return true;
@@ -334,7 +328,7 @@ export default class FastMal {
         if (this.annotationsTree.tree('isNodeSelected', target_parent_node)) {
             // allow use to select (on/off) the target node
             this.annotationsTree.tree('addToSelection', target_node);
-            regions_info.shape_defaults.FastMal_Text.add(type_id);
+            regions_info.shape_defaults.FastMal_Text.add(node_id);
             this.context.publish(FASTMAL_SELECTED, {shape_id: this.lastActiveShape}); // fires regions-drawing.onDrawShape()
             console.log('2: ', regions_info.shape_defaults.FastMal_Text);
             return true;
@@ -348,7 +342,7 @@ export default class FastMal {
      * Retrieves ROI and tag information about a dataset and stores it
      * in instance variable
      */
-    refreshDatasetRoiCounts(dataset_id, async=true) {
+    refreshDatasetRoiInfo(dataset_id, async=true) {
         // If dataset id not given, use the current dataset
         if (dataset_id == null) {
             dataset_id = this.datasetRoiInfo['dataset_id'];
@@ -492,17 +486,26 @@ export default class FastMal {
         return '( ' + prev_html + delim + next_html + ' )';
     }
 
+    /**
+     * Given the id of ROI saved in OMERO db, use the old shape_id key to get secondary labels (if any)
+     * saved for the ROI and link them in OMERO as CommentAnnotations
+     * @param roiId - the id of ROI saved in OMERO db
+     * @param key - the old id of the shape used internally by omero_iviewer
+     */
     linkRoiComment(roiId, key) {
+        // can't continue if we can't find the shape in our lookup
         if (!(key in this.shapeToLabels)) {
             return;
         }
 
         let labels = Array.from(this.shapeToLabels[key]);
 
-        if (labels.length == 0) {
+        // no need to continue if there are no labels to links
+        if (labels.length === 0) {
             return;
         }
 
+        // endpoint accepts multiple labels as comma-separated list
         labels = labels.join();
 
         $.ajax({

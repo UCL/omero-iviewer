@@ -395,7 +395,7 @@ export default class ThumbnailSlider extends EventSubscriber {
                     url: thumbPrefix + id + "/",
                     title: id,
                     revision : 0,
-                    roiCounts : this.context.fastMal.getRoiTypeCountsForImage(id)
+                    roiCounts : this.context.fastMal.getRoiLabelCountsForImage(id)
                 });
                 this.thumbnails_end_index++;
             };
@@ -501,7 +501,7 @@ export default class ThumbnailSlider extends EventSubscriber {
                 url: thumbPrefix + id + "/",
                 title: typeof item.Name === 'string' ? item.Name : id,
                 revision : 0,
-                roiCounts : this.context.fastMal.getRoiTypeCountsForImage(id)
+                roiCounts : this.context.fastMal.getRoiLabelCountsForImage(id)
             }
 
             // FastMal check whether we should display this image to annotate
@@ -558,7 +558,7 @@ export default class ThumbnailSlider extends EventSubscriber {
                         this.image_config.image_info.parent_type :
                         this.context.initial_type;
             this.context.addImageConfig(image_id, parent_id, parent_type);
-            this.context.fastMal.refreshDatasetRoiCounts(null, true);
+            this.context.fastMal.refreshDatasetRoiInfo(null, true);
         };
 
         // pop up dialog to ask whether user wants to store rois changes

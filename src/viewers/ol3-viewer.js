@@ -800,7 +800,7 @@ export default class Ol3Viewer extends EventSubscriber {
             this.image_config.regions_info.data.size;
 
         // update FastMal ROI counts
-        this.context.fastMal.refreshDatasetRoiCounts(null, true);
+        this.context.fastMal.refreshDatasetRoiInfo(null, true);
 
         // if we stored as part of a delete request we need to clean up
         // the history for the deleted shapes,

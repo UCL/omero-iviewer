@@ -308,7 +308,7 @@ export default class Context {
             return;
         } else {
             // Load the FastMal dataset information re. ROIs etc
-            this.fastMal.refreshDatasetRoiCounts(initial_dataset_id, false);
+            this.fastMal.refreshDatasetRoiInfo(initial_dataset_id, false);
             // Can't continue if the refreshing wasn't successful
             if ('error' in this.fastMal.datasetRoiInfo ||
                 this.fastMal.datasetRoiInfo['image_ids'].length === 0) {
