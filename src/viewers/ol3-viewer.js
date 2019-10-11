@@ -744,10 +744,6 @@ export default class Ol3Viewer extends EventSubscriber {
                 let oldRoiAndShapeId = Converters.extractRoiAndShapeId(id);
                 let newRoiAndShapeId = Converters.extractRoiAndShapeId(syncId);
 
-                // FASt-Mal: save secondary labels as CommentAnnotations on Roi
-                console.log('linkRoiComment', [newRoiAndShapeId.roi_id, id]);
-                this.context.fastMal.linkRoiComment(newRoiAndShapeId.roi_id, id);
-
                 // we reset modifed and stats
                 shape.modified = false;
                 shape.stats = null;
@@ -772,6 +768,10 @@ export default class Ol3Viewer extends EventSubscriber {
                     newShape['@id'] = newRoiAndShapeId.shape_id;
                     newRoi.shapes.set(newRoiAndShapeId.shape_id, newShape);
                     shape.deleted = true; // take out old entry
+
+                    // FASt-Mal: save secondary labels as CommentAnnotations on Roi
+                    console.log('linkRoiComment', [newRoiAndShapeId.roi_id, id]);
+                    this.context.fastMal.linkRoiComment(newRoiAndShapeId.roi_id, id);
                 }
                 // we remove shapes flagged deleted=true
                 if (shape.deleted) {
