@@ -78,7 +78,38 @@ def fastmal_shape_annotation(request, shape_id, key, value_new=None, conn=None, 
         return JsonResponse({'error': 'Shape not found'})
 
 @login_required()
-def fastmal_roi_comment(request, roi_id, comments, conn=None, **kwargs):  
+def fastmal_image_roi_comments(request, image_id, conn=None, **kwargs):
+    if 'active_group' in request.session:
+        conn.setGroupForSession(request.session['active_group'])
+    current_group_id = conn.getGroupFromContext().getId()
+    conn.SERVICE_OPTS.setOmeroGroup(current_group_id)
+
+    qs = conn.getQueryService()
+
+    params = Parameters()
+    params.map = {}
+    params.map["id"] = rlong(image_id)
+
+    rois_in_image = qs.findAllByQuery("""select r from Roi r 
+        join fetch r.annotationLinks as roiAnnotationLink
+        join fetch roiAnnotationLink.child
+        where r.image.id = :id""", params)
+
+    d = defaultdict(list)
+
+    # collect the results
+    for roi_in_image in rois_in_image:
+        for annotation_link_for_roi in roi_in_image.iterateAnnotationLinks():
+            d[str(roi_in_image.id.val)].append(annotation_link_for_roi.child.textValue.val)
+
+    # sort comments for consistent display
+    for key, value in d.items():
+        d[key] = sorted(value)
+
+    return JsonResponse(dict(d))
+
+@login_required()
+def fastmal_roi_comment(request, roi_id, comments, conn=None, **kwargs):
     """Links CommentAnnotation from ucl.ac.uk/fastmal/roi namespace to an Roi.
 
     Endpoint for /iviewer/fastmal_roi_comment/roi_id/comments (list separated)
@@ -302,7 +333,7 @@ def fastmal_data(request, dataset_id, conn=None, **kwargs):
 
         elapsed = timeit.default_timer() - start_time
 
-        response = { 'image_ids': image_ids,
+        response = {'image_ids': image_ids,
                 'roi_type_count': dataset_totals,
                 'execution_time': elapsed,
                 'images_with_rois': rois_per_image,
