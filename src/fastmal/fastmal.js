@@ -99,8 +99,8 @@ export default class FastMal {
                 try {
                     this.userInfo = response;
                 } catch(err) {
-                    console.error("Failed to userInfo");
-                    this.userInfo = err.responseJSON;
+                    console.error("Failed to userInfo", err);
+                    this.userInfo = err['responseJSON'];
                 }
             }, 
              error: (jqxhr, status, exception) => {
@@ -119,7 +119,7 @@ export default class FastMal {
         const label_set = this.getRegionsInfo().shape_defaults.FastMal_Text;
         console.log('FastMal.saveShapeLabel', [shape_id, label_set]);
         if (shape_id in this.shapeToLabels) {
-            console.err("shape_id " + shape_id + " already exists in shapeToLabels");
+            console.error("shape_id " + shape_id + " already exists in shapeToLabels");
             console.log(this.shapeToLabels);
         } else {
             if (label_set.size > 0) {
@@ -133,7 +133,7 @@ export default class FastMal {
      * Returns the ROI types valid for the currently loaded dataset
      */
     getRoiLabels() {
-        return this.datasetRoiInfo.project_roi_labels;
+        return this.datasetRoiInfo['project_roi_labels'];
     }
 
     /**
@@ -157,11 +157,8 @@ export default class FastMal {
      */
     getRoiLabelCountsHTML(regions_info) {
         // Is the currently select image linked to the FASTMAL_ROI_COMPLETE tag
-        if (this.context.getSelectedImageConfig().image_info.image_id.toString() in this.datasetRoiInfo['images_roi_complete']) {
-            this.roiAnnotationComplete = true;
-        } else {
-            this.roiAnnotationComplete = false;
-        }
+        this.roiAnnotationComplete = this.context.getSelectedImageConfig().image_info.image_id.toString() in this.datasetRoiInfo['images_roi_complete'];
+
         const counts = this.countRoiLabels(regions_info);
         const roiTypes = this.getRoiLabels();
         this.roiTypes = roiTypes;
@@ -208,7 +205,7 @@ export default class FastMal {
             url : '/iviewer/fastmal_roi_complete_tag/' + this.getRegionsInfo().image_info.image_id + '/' + state + '/',
             success : (response) => {
                 try {
-                    console.log('Successfully set tag');
+                    console.log('Successfully set tag', response);
                     this.refreshDatasetRoiInfo(null);
                     return true;
                 } catch(err) {
@@ -216,7 +213,7 @@ export default class FastMal {
                     return false;
                 }
             }, error : (error) => {
-                console.error("Failed to set tag")
+                console.error("Failed to set tag", error);
                 return false;
             }
         });
@@ -254,7 +251,7 @@ export default class FastMal {
         } else if (node_level === 2) {
             return this.secondaryLabelClicked(node_id);
         } else {
-            console.err("Do not know how to handle level " + node_level + " node");
+            console.error("Do not know how to handle level " + node_level + " node");
             return false;
         }
     }
@@ -320,7 +317,6 @@ export default class FastMal {
             this.annotationsTree.tree('removeFromSelection', target_node);
             regions_info.shape_defaults.FastMal_Text.delete(node_id);
             this.context.publish(FASTMAL_SELECTED, {shape_id: this.lastActiveShape}); // fires regions-drawing.onDrawShape()
-            console.log('1: ', regions_info.shape_defaults.FastMal_Text);
             return true;
         }
         
@@ -330,7 +326,6 @@ export default class FastMal {
             this.annotationsTree.tree('addToSelection', target_node);
             regions_info.shape_defaults.FastMal_Text.add(node_id);
             this.context.publish(FASTMAL_SELECTED, {shape_id: this.lastActiveShape}); // fires regions-drawing.onDrawShape()
-            console.log('2: ', regions_info.shape_defaults.FastMal_Text);
             return true;
         } else {
             // prevent user from selecting this node
@@ -359,10 +354,11 @@ export default class FastMal {
                     this.datasetRoiInfo['dataset_id'] = dataset_id;
                     this.setInProgressImageIds();
 
-                    // add "off" to the project roi labels
+                    // add "off" to the project roi labels (at the beginning of the list)
                     this.datasetRoiInfo.project_roi_labels.unshift(
                         { "name": "Off", "id": "FASTMAL:OFF" }
                     );
+
                     // give each top-level roi label an id and a colour
                     for (let i = 1; i < this.datasetRoiInfo.project_roi_labels.length; i++) {
                         this.datasetRoiInfo.project_roi_labels[i]["colour"] = this.lineColours[i];
@@ -371,11 +367,11 @@ export default class FastMal {
                     this.context.publish(FASTMAL_COUNT_UPDATE, {}); // fires regions-list.updateRoiCounts()
                     this.context.publish(FASTMAL_THUMBNAIL_REFRESH, {});
                 } catch(err) {
-                    console.error("Failed to load Rois: ");
+                    console.error("Failed to load Rois", err.responseJSON);
                     this.datasetRoiInfo = err.responseJSON;
                 }
             }, error : (error) => {
-                console.error("Failed to load Rois: ")
+                console.error("Failed to load Rois", error.responseJSON);
                 this.datasetRoiInfo = error.responseJSON;
             }
         });
@@ -383,16 +379,15 @@ export default class FastMal {
 
     /**
      * Constructs HTML links to display at top of thumbnail slide
-     * Lsit of in progress images
      */
     setInProgressImageIds() {
-        let image_ids = [];
-        for (let image_id in this.datasetRoiInfo['images_with_rois']) {
-            if (!(image_id in this.datasetRoiInfo['images_roi_complete'])) {
-                image_ids.push(image_id);
-            }
-        }
-        this.imagesAnnotationInProgress = image_ids;
+        // for each image that has annotations, add it to the 'in progress' array if it is not
+        // linked to the FASTMAL_ROI_COMPLETE tag
+        this.imagesAnnotationInProgress = Object.keys(this.datasetRoiInfo['images_with_rois']).reduce((acc, image_id) => {
+            if (!(image_id in this.datasetRoiInfo['images_roi_complete']))
+                acc.push(image_id);
+            return acc;
+        }, [])
     }
 
     /**
@@ -420,7 +415,7 @@ export default class FastMal {
                     event_in.target.value="???";
                 }
             }, error : (error) => {
-                console.error("Failed to get shape annotation ")
+                console.error("Failed to get shape annotation", error);
                 event_in.target.value="???";
             }
         });
@@ -437,9 +432,9 @@ export default class FastMal {
             async : true,
             success : (response) => {
                 try {
-                    if ("error" in response && response["error"] == "Annotation not found") {
+                    if ("error" in response && response["error"] === "Annotation not found") {
                         element.value = '';
-                    } else if ("msg" in response && response["msg"] == "MapAnnotation found") {
+                    } else if ("msg" in response && response["msg"] === "MapAnnotation found") {
                         element.value = response["annotation"][1];
                     } else {
                         element.value = "???";
@@ -449,7 +444,7 @@ export default class FastMal {
                     element.value="???";
                 }
             }, error : (error) => {
-                console.error("Failed to get shape annotation ")
+                console.error("Failed to get shape annotation", error);
                 element.value="???";
             }
         });
@@ -513,13 +508,13 @@ export default class FastMal {
             async : true,
             success : (response) => {
                 try {
-                    console.log("Successfully saved " + labels + " labels to roi " + roiId);
-                } catch(err) {
-                    console.error("Error linking roi to comments");
+                    console.log("Successfully saved " + labels + " labels to roi " + roiId, response);
+                } catch(error) {
+                    console.error("Error linking roi to comments", error);
                 }
             }, 
             error : (error) => {
-                console.error("Error linking roi to comments")
+                console.error("Error linking roi to comments", error)
             }
         });
     }
