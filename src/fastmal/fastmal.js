@@ -21,11 +21,6 @@ export default class FastMal {
     context = null;
 
     /**
-     * Used by regions-edit.html to bind the currently selected type
-     */
-    roiTypes = null;
-
-    /**
      * Whether the current image has the 'FASTMAL_ROI_COMPLETE' tag linked
      */
     roiAnnotationComplete = null;
@@ -80,7 +75,6 @@ export default class FastMal {
 
     constructor(context) {
         this.context = context;
-        this.roiTypes = FastMal.NO_ROI_LABELS_DEFINED;
         this.setUserInfo();
         console.log("Instantiated FastMal", this);  // Useful for debugging in devtools
     }
@@ -119,11 +113,11 @@ export default class FastMal {
         const label_set = this.getRegionsInfo().shape_defaults.FastMal_Text;
         console.log("FastMal.saveShapeLabel", [shape_id, label_set]);
         if (shape_id in this.shapeToLabels) {
-            console.error("shape_id " + shape_id + " already exists in shapeToLabels");
+            console.error(`shape_id ${shape_id} already exists in shapeToLabels`);
             console.log(this.shapeToLabels);
         } else {
             if (label_set.size > 0) {
-                console.log("saved shaped label for " + shape_id, label_set);
+                console.log(`saved shaped label for ${shape_id}`, label_set);
                 this.shapeToLabels[shape_id] = new Set(label_set);
             }
         }
@@ -160,18 +154,17 @@ export default class FastMal {
         this.roiAnnotationComplete = this.context.getSelectedImageConfig().image_info.image_id.toString() in this.datasetRoiInfo["images_roi_complete"];
 
         const counts = this.countRoiLabels(regions_info);
-        const roiTypes = this.getRoiLabels();
-        this.roiTypes = roiTypes;
+        const roiLabels = this.getRoiLabels();
         let html = "";
         // total = ROI type counts for image; grandTotal = ROI type counts for dataset
         let total = 0, grandTotal = 0, iCount = 0;
         const datasetCounts = this.datasetRoiInfo["roi_type_count"];
         const imageCounts = this.datasetRoiInfo["images_per_roi"];
-        for (let i = 1; i < roiTypes.length; i++) {
-            total = counts[roiTypes[i].id] ? counts[roiTypes[i].id] : 0;
-            grandTotal = datasetCounts[roiTypes[i].id] ? datasetCounts[roiTypes[i].id] : 0;
-            iCount = imageCounts[roiTypes[i].id] ? imageCounts[roiTypes[i].id] : 0;
-            html += roiTypes[i].name + ": " + total + "/" + grandTotal + " from " + iCount + "; ";
+        for (let i = 1; i < roiLabels.length; i++) {
+            total = counts[roiLabels[i].id] ? counts[roiLabels[i].id] : 0;
+            grandTotal = datasetCounts[roiLabels[i].id] ? datasetCounts[roiLabels[i].id] : 0;
+            iCount = imageCounts[roiLabels[i].id] ? imageCounts[roiLabels[i].id] : 0;
+            html += `${roiLabels[i].name}: ${total}/${grandTotal} from ${iCount}; `;
         }
         return html;
     }
@@ -181,16 +174,15 @@ export default class FastMal {
      * Used in thumbnail slider view
      */
     getRoiLabelCountsForImage(image_id) {
-        const roiTypes = this.getRoiLabels();
-        this.roiTypes = roiTypes;
+        const roiLabels = this.getRoiLabels();
         let counts = [];
         if (image_id in this.datasetRoiInfo["images_with_rois"]) {
             const lookup = this.datasetRoiInfo["images_with_rois"][image_id.toString()];
-            for (let i = 1; i < roiTypes.length; i++) {
-                counts.push(lookup[roiTypes[i].id] ? lookup[roiTypes[i].id] : 0);
+            for (let i = 1; i < roiLabels.length; i++) {
+                counts.push(lookup[roiLabels[i].id] ? lookup[roiLabels[i].id] : 0);
             }
         } else {
-            for (let i = 1; i < roiTypes.length; i++) {
+            for (let i = 1; i < roiLabels.length; i++) {
                 counts.push(0);
             }
         }
@@ -202,7 +194,7 @@ export default class FastMal {
      */
     updateRoiCompleteTag(state) {
         $.ajax({
-            url : "/iviewer/fastmal_roi_complete_tag/" + this.getRegionsInfo().image_info.image_id + "/" + state + "/",
+            url : `/iviewer/fastmal_roi_complete_tag/${this.getRegionsInfo().image_info.image_id}/${state}/`,
             success : (response) => {
                 try {
                     console.log("Successfully set tag", response);
@@ -251,7 +243,7 @@ export default class FastMal {
         } else if (node_level === 2) {
             return this.secondaryLabelClicked(node_id);
         } else {
-            console.error("Do not know how to handle level " + node_level + " node");
+            console.error(`Do not know how to handle level ${node_level} node`);
             return false;
         }
     }
@@ -294,7 +286,7 @@ export default class FastMal {
         regions_info.shape_defaults.FastMal_Text = new Set();
 
         const selected_node = this.annotationsTree.tree("getNodeById", node_id);
-        const rgb_string = "rgb(" + selected_node.colour + ")";
+        const rgb_string = `rgb(${selected_node.colour})`;
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
 
         this.context.publish(FASTMAL_SELECTED, {shape_id: this.lastActiveShape}); // fires regions-drawing.onDrawShape()
@@ -345,7 +337,7 @@ export default class FastMal {
 
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
-            url : "/iviewer/fastmal_data/" + dataset_id + "/",
+            url : `/iviewer/fastmal_data/${dataset_id}/`,
             async : async,
             dataType: "json",
             success : (response) => {
@@ -397,7 +389,7 @@ export default class FastMal {
         const shape_id = shape["@id"];
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
-            url : "/iviewer/fastmal_shape_annotation/" + shape_id + "/CrowdRange/" + event_in.target.value + "/",
+            url : `/iviewer/fastmal_shape_annotation/${shape_id}/CrowdRange/${event_in.target.value}/`,
             async : true,
             success : (response) => {
                 try {
@@ -428,7 +420,7 @@ export default class FastMal {
         const shape_id = shape["@id"];
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
-            url : "/iviewer/fastmal_shape_annotation/" + shape_id + "/CrowdRange/",
+            url : `/iviewer/fastmal_shape_annotation/${shape_id}/CrowdRange/`,
             async : true,
             success : (response) => {
                 try {
@@ -440,7 +432,7 @@ export default class FastMal {
                         element.value = "???";
                     }
                 } catch(err) {
-                    console.error("Failed to get shape annotation ");
+                    console.error("Failed to get shape annotation", err);
                     element.value="???";
                 }
             }, error : (error) => {
@@ -454,7 +446,7 @@ export default class FastMal {
      * Returns HTML required for links to previous and next image in dataset
      */
     getLinkToPrevNext(currentId) {
-        const base_url = "/iviewer/?dataset=" + this.datasetRoiInfo["dataset_id"];
+        const base_url = `/iviewer/?dataset=${this.datasetRoiInfo["dataset_id"]}`;
         const currentIndex = this.datasetRoiInfo["image_ids"].indexOf(currentId);
 
         // link to next image
@@ -462,7 +454,7 @@ export default class FastMal {
         let next_html = "";
         if (currentIndex < this.datasetRoiInfo["image_ids"].length - 1) {
             next_url = base_url + "&images=" + this.datasetRoiInfo["image_ids"][currentIndex + 1];
-            next_html = "<a style=\"color:white;\" href=\"" + next_url + "\">next</a>";
+            next_html = `<a style="color:white;" href="${next_url}">next</a>`;
         }
 
         // link to previous image
@@ -470,7 +462,7 @@ export default class FastMal {
         let prev_html = "";
         if (currentIndex > 0) {
             prev_url = base_url + "&images=" + this.datasetRoiInfo["image_ids"][currentIndex - 1];
-            prev_html = "<a style=\"color:white;\" href=\"" + prev_url + "\">previous</a>";
+            prev_html = `<a style="color:white;" href="${prev_url}">previous</a>`;
         }
 
         // put the two urls together
@@ -478,7 +470,7 @@ export default class FastMal {
         if (next_url.length > 0 && prev_url.length > 0) {
             delim = ", ";
         }
-        return "( " + prev_html + delim + next_html + " )";
+        return `( ${prev_html}${delim}${next_html} )`
     }
 
     /**
@@ -504,7 +496,7 @@ export default class FastMal {
         labels = labels.join();
 
         $.ajax({
-            url : "/iviewer/fastmal_roi_comment/" + roiId + "/" + labels + "/",
+            url : `/iviewer/fastmal_roi_comment/${roiId}/${labels}/`,
             async : true,
             success : (response) => {
                 try {
