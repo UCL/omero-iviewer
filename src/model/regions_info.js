@@ -464,7 +464,6 @@ export default class RegionsInfo  {
             'Symbol': 'pixel',
             'Value': 3  // FastMal: a thicker default stroke width
         };
-        this.shape_defaults['FastMal_Text'] = new Set();  // FastMal: store for secondary labels
     }
 
     /**

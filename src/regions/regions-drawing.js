@@ -312,11 +312,7 @@ export default class RegionsDrawing extends EventSubscriber {
         // define shape to be drawn including any pre-set defaults (e.g. colors)
         let def =  {type: this.regions_info.shape_to_be_drawn};
         for (let s in this.regions_info.shape_defaults) {
-            if (s == "FastMal_Text") {
-                def["FastMal_Text"] = new Set(this.regions_info.shape_defaults[s]);
-            } else {
-                def[s] = this.regions_info.shape_defaults[s];
-            }
+            def[s] = this.regions_info.shape_defaults[s];
         }
 
         // save the shape_default for this shape

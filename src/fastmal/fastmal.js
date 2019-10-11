@@ -56,6 +56,12 @@ export default class FastMal {
     userInfo = null;
 
     /**
+     * Holds the secondary labels currently selected before drawing ROI. After drawing, it's stored
+     * in shapeToLabels
+     */
+    selectedLabelsForShape = new Set();
+
+    /**
      * A list of nice colours to use for ROIs
      */
     lineColours = [ "230,25,75", "60,180,75", "255,225,25", "0,130,200", 
@@ -110,7 +116,7 @@ export default class FastMal {
      * The shape_id is the "old id" used whilst drawing
      */
     saveShapeLabel(shape_id) {
-        const label_set = this.getRegionsInfo().shape_defaults.FastMal_Text;
+        const label_set = this.selectedLabelsForShape;
         console.log("FastMal.saveShapeLabel", [shape_id, label_set]);
 
         if (shape_id in this.shapeToLabels) {
@@ -274,18 +280,18 @@ export default class FastMal {
         t.tree("selectNode", node, { mustToggle: false });
         t.tree("openNode", node);
 
+        // always clear all saved secondary labels
+        this.selectedLabelsForShape.clear();
+
         // If we're turning off ROI shapes (i.e. select mode)
         if (node_id === "FASTMAL:OFF") {
             regions_info.shape_defaults.Text = "";
             regions_info.shape_to_be_drawn = null;
-            regions_info.shape_defaults.FastMal_Text = new Set();
             this.context.publish(FASTMAL_DESELECTED, {}); // fires regions-drawing.onDrawShape()
             return true;
         }
 
         regions_info.shape_defaults.Text = node_id;
-        regions_info.shape_defaults.FastMal_Text = new Set();
-
         const selected_node = t.tree("getNodeById", node_id);
         const rgb_string = `rgb(${selected_node.colour})`;
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
@@ -308,7 +314,7 @@ export default class FastMal {
         if (this.annotationsTree.tree("isNodeSelected", target_node)) {
             // turn off selection
             this.annotationsTree.tree("removeFromSelection", target_node);
-            regions_info.shape_defaults.FastMal_Text.delete(node_id);
+            this.selectedLabelsForShape.delete(node_id);
             this.context.publish(FASTMAL_SELECTED, {shape_id: this.lastActiveShape}); // fires regions-drawing.onDrawShape()
             return true;
         }
@@ -317,7 +323,7 @@ export default class FastMal {
         if (this.annotationsTree.tree("isNodeSelected", target_parent_node)) {
             // allow use to select (on/off) the target node
             this.annotationsTree.tree("addToSelection", target_node);
-            regions_info.shape_defaults.FastMal_Text.add(node_id);
+            this.selectedLabelsForShape.add(node_id);
             this.context.publish(FASTMAL_SELECTED, {shape_id: this.lastActiveShape}); // fires regions-drawing.onDrawShape()
             return true;
         } else {
