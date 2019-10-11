@@ -19,7 +19,7 @@
 <template>
     <nav class="navbar navbar-default navbar-fixed-top fixed-header">
        <div class="fixed-header-text">
-           <span>${image_info.context.fastMal.userInfo.name} ➡ ${image_info.ready && !image_info.error ?  image_info.dataset_name + ' ➡ ' + image_info.short_image_name : ''} <div style="display:inline;" innerhtml.bind="context.fastMal.getLinkToPrevNext(image_info.image_id)"></div></span>
+           ${image_info.context.fastMal.userInfo.name} ➡ ${image_info.ready && !image_info.error ?  image_info.dataset_name + ' ➡ ' + image_info.short_image_name : ''} <div style="display:inline;" innerhtml.bind="context.fastMal.getLinkToPrevNext(image_info.image_id)"></div>
            <span class="app-version">${context.getVersion()}</span>
        </div>
     </nav>
