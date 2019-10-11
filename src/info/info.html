@@ -27,9 +27,9 @@
         <tr>
             <td class="col-sm-6 text-weight-bold">Image ID:</td>
             <td class="col-sm-6">
-                <a href="/webclient/?show=image-${image_info.image_id}">
-                    ${image_info.image_id}
-                </a>
+                <a href="/webclient/?show=image-${image_info.image_id}"
+                    title="Show image ${image_info.image_id} in webclient"
+                    target="_blank">${image_info.image_id}</a>
             </td>
         </tr>
         <tr show.bind="parent_info !== null">
