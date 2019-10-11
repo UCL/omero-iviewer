@@ -75,6 +75,7 @@ export class Header {
      */
      onImageConfigChange() {
         if (this.context.getSelectedImageConfig() === null) return;
+        this.context.fastMal.onImageConfigChange();  // hook to notify FastMal of new image
         this.image_info = this.context.getSelectedImageConfig().image_info;
      }
 

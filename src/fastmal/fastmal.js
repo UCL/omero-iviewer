@@ -62,6 +62,16 @@ export default class FastMal {
     selectedLabelsForShape = new Set();
 
     /**
+     * Linked CommentAnnotations for saved ROI labels on current image1
+     */
+    savedCommentAnnotations = { };
+
+    /**
+     * A lookup table for readable descriptions of labels
+     */
+    roiLabelDescriptionLookup = { };
+
+    /**
      * A list of nice colours to use for ROIs
      */
     lineColours = [ "230,25,75", "60,180,75", "255,225,25", "0,130,200", 
@@ -83,6 +93,26 @@ export default class FastMal {
         this.context = context;
         this.setUserInfo();
         console.log("Instantiated FastMal", this);  // Useful for debugging in devtools
+    }
+
+    onImageConfigChange() {
+        if (this.context.getSelectedImageConfig() === null) return;
+        let image_info = this.context.getSelectedImageConfig().image_info;
+        this.loadImageRoiComments();
+    }
+
+    loadImageRoiComments() {
+        let image_info = this.context.getSelectedImageConfig().image_info;
+        const image_id = image_info.image_id;
+        $.ajax({
+            url : `/iviewer/fastmal_image_roi_comments/${image_id}/`,
+            async : true,
+            success : (response) => {
+                this.savedCommentAnnotations = response;
+            }, error : (error) => {
+                console.error("Failed to get linked CommentAnnotations for image", error);
+            }
+        });
     }
 
     /**
@@ -363,6 +393,16 @@ export default class FastMal {
                         this.datasetRoiInfo.project_roi_labels[i]["colour"] = this.lineColours[i];
                     }
 
+                    // keep a lookup table for node descriptions
+                    // note we only handle two levels deep here!
+                    this.roiLabelDescriptionLookup = Object.values(this.datasetRoiInfo.project_roi_labels).reduce((acc, node) => {
+                            acc[node.id] = node.name;
+                            if ('children' in node) {
+                                node.children.forEach((c) => { acc[c.id] = c.name })
+                            }
+                            return acc;
+                        }, { } );
+
                     this.context.publish(FASTMAL_COUNT_UPDATE, {}); // fires regions-list.updateRoiCounts()
                     this.context.publish(FASTMAL_THUMBNAIL_REFRESH, {});
                 } catch(err) {
@@ -516,5 +556,53 @@ export default class FastMal {
                 console.error("Error linking roi to comments", error)
             }
         });
+    }
+
+    /**
+     * Given a first-level ROI label or a shape, this function returns the human-readable
+     * description
+     */
+    getPrettyRoiLabels(params) {
+        // if the normal text label was given
+        if ('text' in params) {
+            return `${this.roiLabelDescriptionLookup[params.text]}`
+        }
+
+        // otherwise, we have the shape
+        const shape = params.shape;
+
+        let roi_id;
+        let output = [ ];
+
+        // first check whether it's in the saved ROI lookup table
+        // if the shape has been saved and image config loaded, we'll have the image annotations
+        // saved in savedCommentAnnotations
+        if (shape['@id'] in this.savedCommentAnnotations) {
+            roi_id = shape['@id'];
+            this.savedCommentAnnotations[roi_id].forEach((id) => {
+                if (id in this.roiLabelDescriptionLookup) {
+                    output.push(this.roiLabelDescriptionLookup[id]);
+                } else {
+                    output.push(id);
+                }
+            });
+        // otherwise, use the old shape_id and look in the shapeToLabels, which stores the current
+        // user options about which secondary-level labels are set for shapes
+        } else if (shape.oldId in this.shapeToLabels) {
+            roi_id = shape.oldId;
+            this.shapeToLabels[roi_id].forEach((id) => {
+                if (id in this.roiLabelDescriptionLookup) {
+                    output.push(this.roiLabelDescriptionLookup[id]);
+                } else {
+                    output.push(id);
+                }
+            });
+        }
+
+        if (output.length > 0) {
+            return `(${output.join()})`;
+        }
+
+        return "";
     }
 }

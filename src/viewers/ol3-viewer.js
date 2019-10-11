@@ -771,7 +771,8 @@ export default class Ol3Viewer extends EventSubscriber {
 
                     // FastMal: save secondary labels as CommentAnnotations on Roi
                     console.log('linkRoiComment', [newRoiAndShapeId.roi_id, id]);
-                    this.context.fastMal.linkRoiComment(newRoiAndShapeId.roi_id, id);
+                    this.context.fastMal.linkRoiComment(newRoiAndShapeId.roi_id, id);  // map the old to new shape ids
+                    this.context.fastMal.loadImageRoiComments();  // reload the roi comment lookup table
                 }
                 // we remove shapes flagged deleted=true
                 if (shape.deleted) {

@@ -115,7 +115,7 @@
                         click.delegate="selectShape(shape.shape_id, shape.selected, $event)">
                         <!-- 1 <div class="regions-table-col roi-toggle"></div> -->
                         <!-- 2 --> <div class="regions-table-col shape-show">
-                            <input type="checkbox"
+                            <input type="checkbox" style="margin:0px;"
                                 title="Show/Hide shape" checked.one-way="shape.visible"
                                 change.delegate="toggleShapeVisibility(shape.shape_id, $event)"/>
                         </div>
@@ -130,7 +130,8 @@
                         -->
                         <!-- 3 --> <div class="regions-table-col shape-comment"
                              show.bind="active_column === 'comments'">
-                            ${shape.Text ? shape.Text : ''}
+                        ${shape.Text ? context.fastMal.getPrettyRoiLabels({'text': shape.Text}) : ''}
+                        <span>${context.fastMal.getPrettyRoiLabels({'shape': shape})}</span>
                             <input if.bind="shape.Text.includes('_CROWD') && shape_id > 0" change.delegate="updateCrowdRange(shape, $event)" element.ref="crowdRange" style="width:65px" value.one-way="getCrowdRange(shape, crowdRange)" />
                         </div>
                         <!-- 4 --> <div class="regions-table-col shape-area"
