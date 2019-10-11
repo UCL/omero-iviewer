@@ -112,6 +112,7 @@ export default class FastMal {
     saveShapeLabel(shape_id) {
         const label_set = this.getRegionsInfo().shape_defaults.FastMal_Text;
         console.log("FastMal.saveShapeLabel", [shape_id, label_set]);
+
         if (shape_id in this.shapeToLabels) {
             console.error(`shape_id ${shape_id} already exists in shapeToLabels`);
             console.log(this.shapeToLabels);
@@ -175,16 +176,15 @@ export default class FastMal {
      */
     getRoiLabelCountsForImage(image_id) {
         const roiLabels = this.getRoiLabels();
-        let counts = [];
+        let counts;
         if (image_id in this.datasetRoiInfo["images_with_rois"]) {
+            counts = [];
             const lookup = this.datasetRoiInfo["images_with_rois"][image_id.toString()];
             for (let i = 1; i < roiLabels.length; i++) {
                 counts.push(lookup[roiLabels[i].id] ? lookup[roiLabels[i].id] : 0);
             }
         } else {
-            for (let i = 1; i < roiLabels.length; i++) {
-                counts.push(0);
-            }
+            counts = Array(roiLabels.length).fill(0);
         }
         return counts;
     }
@@ -254,24 +254,25 @@ export default class FastMal {
     primaryLabelClicked(node_id) {
         const regions_info = this.getRegionsInfo();
 
+        // just an alias
+        const t = this.annotationsTree;
+
         // deselect all nodes
-        const selected = this.annotationsTree.tree("getState").selected_node;
-        for (let i = 0; i < selected.length; i++) {
-            const node = this.annotationsTree.tree("getNodeById", selected[i]);
-            this.annotationsTree.tree("removeFromSelection", node);
-        }
+        t.tree("getState").selected_node.forEach((node_id) => {
+            const node = t.tree("getNodeById", node_id);
+            t.tree("removeFromSelection", node);
+        });
 
         // close all open nodes
-        const open_nodes = this.annotationsTree.tree("getState").open_nodes;
-        for (let i = 0; i < open_nodes.length; i++) {
-            const node = this.annotationsTree.tree("getNodeById", open_nodes[i]);
-            this.annotationsTree.tree("closeNode", node);
-        }
+        t.tree("getState").open_nodes.forEach((node_id) => {
+            const node = t.tree("getNodeById", node_id);
+            t.tree("closeNode", node);
+        });
 
-        // select ond open only the selected node       
-        const node = this.annotationsTree.tree("getNodeById", node_id);
-        this.annotationsTree.tree("selectNode", node, { mustToggle: false });
-        this.annotationsTree.tree("openNode", node);
+        // select ond open the selected node only
+        const node = t.tree("getNodeById", node_id);
+        t.tree("selectNode", node, { mustToggle: false });
+        t.tree("openNode", node);
 
         // If we're turning off ROI shapes (i.e. select mode)
         if (node_id === "FASTMAL:OFF") {
@@ -285,7 +286,7 @@ export default class FastMal {
         regions_info.shape_defaults.Text = node_id;
         regions_info.shape_defaults.FastMal_Text = new Set();
 
-        const selected_node = this.annotationsTree.tree("getNodeById", node_id);
+        const selected_node = t.tree("getNodeById", node_id);
         const rgb_string = `rgb(${selected_node.colour})`;
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
 
@@ -510,5 +511,4 @@ export default class FastMal {
             }
         });
     }
-
 }
