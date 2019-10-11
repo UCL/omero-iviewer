@@ -203,11 +203,11 @@ export default class RegionsEdit extends EventSubscriber {
         var data = this.context.fastMal.datasetRoiCounts.project_roi_labels;
         $tree.tree({data: data});
 
-        function tree_click(c) {
+        function tree_click(context) {
             return function(event) {
                 event.preventDefault();
                 var node = event.node;
-                c.fastMal.fastmalRoiClick(node.id);
+                context.fastMal.fastmalRoiClick(node.id);
             }
         }
 

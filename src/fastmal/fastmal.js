@@ -199,7 +199,6 @@ export default class FastMal {
         });
     }
 
-
     /**
      * Get active regions_info via the Context
      */
@@ -257,9 +256,17 @@ export default class FastMal {
             this.fastmal_roi_tree_element.tree('removeFromSelection', node);
         }
 
-        // select only the selected node       
+        // close all open nodes
+        const open_nodes = this.fastmal_roi_tree_element.tree('getState').open_nodes;
+        for (let i = 0; i < open_nodes.length; i++) {
+            const node = this.fastmal_roi_tree_element.tree('getNodeById', open_nodes[i]);
+            this.fastmal_roi_tree_element.tree('closeNode', node);
+        }
+
+        // select ond open only the selected node       
         const node = this.fastmal_roi_tree_element.tree('getNodeById', type_id);
         this.fastmal_roi_tree_element.tree('selectNode', node, { mustToggle: false });
+        this.fastmal_roi_tree_element.tree('openNode', node);
 
         // If we're turning off ROI shapes (i.e. select mode)
         if (type_id == "FASTMAL:OFF") {
@@ -430,7 +437,6 @@ export default class FastMal {
             }
         });
     }
-
 
     /**
      * Returns HTML required for links to previous and next image in dataset
