@@ -79,6 +79,12 @@ def fastmal_shape_annotation(request, shape_id, key, value_new=None, conn=None, 
 
 @login_required()
 def fastmal_roi_comment(request, roi_id, comments, conn=None, **kwargs):  
+    """Links CommentAnnotation from ucl.ac.uk/fastmal/roi namespace to an Roi.
+
+    Endpoint for /iviewer/fastmal_roi_comment/roi_id/comments (list separated)
+    Creates the CommentAnnotation if it doesn't already exist
+    Comment argument can be comma-separated list of comments
+    """
     # Switch to the active group
     original_group_id = conn.getGroupFromContext().getId()
     if 'active_group' in request.session:
