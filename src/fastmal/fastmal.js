@@ -4,7 +4,7 @@
  * Usage is peppered throughout the omero-iviewer code
  */
 
-import {Converters} from '../utils/converters';
+import {Converters} from "../utils/converters";
 
 // Constants for publish/subscribe events
 export const FASTMAL_DESELECTED = "FASTMAL_DESELECTED";
@@ -74,7 +74,7 @@ export default class FastMal {
      */
     static get NO_ROI_LABELS_DEFINED() {
         return [
-            { name: 'Off', id: 'FASTMAL:OFF' }
+            { name: "Off", id: "FASTMAL:OFF" }
         ];
     }
 
@@ -82,7 +82,7 @@ export default class FastMal {
         this.context = context;
         this.roiTypes = FastMal.NO_ROI_LABELS_DEFINED;
         this.setUserInfo();
-        console.log('Instantiated FastMal', this);  // Useful for debugging in devtools
+        console.log("Instantiated FastMal", this);  // Useful for debugging in devtools
     }
 
     /**
@@ -91,16 +91,16 @@ export default class FastMal {
      */
     setUserInfo() {
         $.ajax({
-            url : '/iviewer/fastmal_user/',
-            type: 'GET',
-            dataType: 'json',
+            url : "/iviewer/fastmal_user/",
+            type: "GET",
+            dataType: "json",
             async : true,
             success : (response) => {
                 try {
                     this.userInfo = response;
                 } catch(err) {
                     console.error("Failed to userInfo", err);
-                    this.userInfo = err['responseJSON'];
+                    this.userInfo = err["responseJSON"];
                 }
             }, 
              error: (jqxhr, status, exception) => {
@@ -117,13 +117,13 @@ export default class FastMal {
      */
     saveShapeLabel(shape_id) {
         const label_set = this.getRegionsInfo().shape_defaults.FastMal_Text;
-        console.log('FastMal.saveShapeLabel', [shape_id, label_set]);
+        console.log("FastMal.saveShapeLabel", [shape_id, label_set]);
         if (shape_id in this.shapeToLabels) {
             console.error("shape_id " + shape_id + " already exists in shapeToLabels");
             console.log(this.shapeToLabels);
         } else {
             if (label_set.size > 0) {
-                console.log('saved shaped label for ' + shape_id, label_set);
+                console.log("saved shaped label for " + shape_id, label_set);
                 this.shapeToLabels[shape_id] = new Set(label_set);
             }
         }
@@ -133,7 +133,7 @@ export default class FastMal {
      * Returns the ROI types valid for the currently loaded dataset
      */
     getRoiLabels() {
-        return this.datasetRoiInfo['project_roi_labels'];
+        return this.datasetRoiInfo["project_roi_labels"];
     }
 
     /**
@@ -157,7 +157,7 @@ export default class FastMal {
      */
     getRoiLabelCountsHTML(regions_info) {
         // Is the currently select image linked to the FASTMAL_ROI_COMPLETE tag
-        this.roiAnnotationComplete = this.context.getSelectedImageConfig().image_info.image_id.toString() in this.datasetRoiInfo['images_roi_complete'];
+        this.roiAnnotationComplete = this.context.getSelectedImageConfig().image_info.image_id.toString() in this.datasetRoiInfo["images_roi_complete"];
 
         const counts = this.countRoiLabels(regions_info);
         const roiTypes = this.getRoiLabels();
@@ -165,8 +165,8 @@ export default class FastMal {
         let html = "";
         // total = ROI type counts for image; grandTotal = ROI type counts for dataset
         let total = 0, grandTotal = 0, iCount = 0;
-        const datasetCounts = this.datasetRoiInfo['roi_type_count'];
-        const imageCounts = this.datasetRoiInfo['images_per_roi'];
+        const datasetCounts = this.datasetRoiInfo["roi_type_count"];
+        const imageCounts = this.datasetRoiInfo["images_per_roi"];
         for (let i = 1; i < roiTypes.length; i++) {
             total = counts[roiTypes[i].id] ? counts[roiTypes[i].id] : 0;
             grandTotal = datasetCounts[roiTypes[i].id] ? datasetCounts[roiTypes[i].id] : 0;
@@ -202,10 +202,10 @@ export default class FastMal {
      */
     updateRoiCompleteTag(state) {
         $.ajax({
-            url : '/iviewer/fastmal_roi_complete_tag/' + this.getRegionsInfo().image_info.image_id + '/' + state + '/',
+            url : "/iviewer/fastmal_roi_complete_tag/" + this.getRegionsInfo().image_info.image_id + "/" + state + "/",
             success : (response) => {
                 try {
-                    console.log('Successfully set tag', response);
+                    console.log("Successfully set tag", response);
                     this.refreshDatasetRoiInfo(null);
                     return true;
                 } catch(err) {
@@ -231,12 +231,12 @@ export default class FastMal {
      * for complete/in progress/no ROI annotations
      */
     getCompletedRoiIndicator(image_id) {
-        if (image_id.toString() in this.datasetRoiInfo['images_roi_complete']) {
-            return '✔';
-        } else if (image_id.toString() in this.datasetRoiInfo['images_with_rois']) {
-            return '✘';
+        if (image_id.toString() in this.datasetRoiInfo["images_roi_complete"]) {
+            return "✔";
+        } else if (image_id.toString() in this.datasetRoiInfo["images_with_rois"]) {
+            return "✘";
         }
-        return '';
+        return "";
     }
 
     /**
@@ -244,7 +244,7 @@ export default class FastMal {
      * Set regions drawing default for a given type
      */
     annotationsTreeClick(node_id) {
-        const node_level = this.annotationsTree.tree('getNodeById', node_id).getLevel();
+        const node_level = this.annotationsTree.tree("getNodeById", node_id).getLevel();
 
         if (node_level === 1) {
             return this.primaryLabelClicked(node_id);
@@ -263,27 +263,27 @@ export default class FastMal {
         const regions_info = this.getRegionsInfo();
 
         // deselect all nodes
-        const selected = this.annotationsTree.tree('getState').selected_node;
+        const selected = this.annotationsTree.tree("getState").selected_node;
         for (let i = 0; i < selected.length; i++) {
-            const node = this.annotationsTree.tree('getNodeById', selected[i]);
-            this.annotationsTree.tree('removeFromSelection', node);
+            const node = this.annotationsTree.tree("getNodeById", selected[i]);
+            this.annotationsTree.tree("removeFromSelection", node);
         }
 
         // close all open nodes
-        const open_nodes = this.annotationsTree.tree('getState').open_nodes;
+        const open_nodes = this.annotationsTree.tree("getState").open_nodes;
         for (let i = 0; i < open_nodes.length; i++) {
-            const node = this.annotationsTree.tree('getNodeById', open_nodes[i]);
-            this.annotationsTree.tree('closeNode', node);
+            const node = this.annotationsTree.tree("getNodeById", open_nodes[i]);
+            this.annotationsTree.tree("closeNode", node);
         }
 
         // select ond open only the selected node       
-        const node = this.annotationsTree.tree('getNodeById', node_id);
-        this.annotationsTree.tree('selectNode', node, { mustToggle: false });
-        this.annotationsTree.tree('openNode', node);
+        const node = this.annotationsTree.tree("getNodeById", node_id);
+        this.annotationsTree.tree("selectNode", node, { mustToggle: false });
+        this.annotationsTree.tree("openNode", node);
 
         // If we're turning off ROI shapes (i.e. select mode)
         if (node_id === "FASTMAL:OFF") {
-            regions_info.shape_defaults.Text = '';
+            regions_info.shape_defaults.Text = "";
             regions_info.shape_to_be_drawn = null;
             regions_info.shape_defaults.FastMal_Text = new Set();
             this.context.publish(FASTMAL_DESELECTED, {}); // fires regions-drawing.onDrawShape()
@@ -293,8 +293,8 @@ export default class FastMal {
         regions_info.shape_defaults.Text = node_id;
         regions_info.shape_defaults.FastMal_Text = new Set();
 
-        const selected_node = this.annotationsTree.tree('getNodeById', node_id);
-        const rgb_string = 'rgb(' + selected_node.colour + ')';
+        const selected_node = this.annotationsTree.tree("getNodeById", node_id);
+        const rgb_string = "rgb(" + selected_node.colour + ")";
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
 
         this.context.publish(FASTMAL_SELECTED, {shape_id: this.lastActiveShape}); // fires regions-drawing.onDrawShape()
@@ -308,22 +308,22 @@ export default class FastMal {
         const regions_info = this.getRegionsInfo();
 
         // get the node that user wants to select (target node)
-        const target_node = this.annotationsTree.tree('getNodeById', node_id);
+        const target_node = this.annotationsTree.tree("getNodeById", node_id);
         const target_parent_node = target_node.parent;
 
         // if the target node is currently selected
-        if (this.annotationsTree.tree('isNodeSelected', target_node)) {
+        if (this.annotationsTree.tree("isNodeSelected", target_node)) {
             // turn off selection
-            this.annotationsTree.tree('removeFromSelection', target_node);
+            this.annotationsTree.tree("removeFromSelection", target_node);
             regions_info.shape_defaults.FastMal_Text.delete(node_id);
             this.context.publish(FASTMAL_SELECTED, {shape_id: this.lastActiveShape}); // fires regions-drawing.onDrawShape()
             return true;
         }
         
         // if the parent node is currently the selected node
-        if (this.annotationsTree.tree('isNodeSelected', target_parent_node)) {
+        if (this.annotationsTree.tree("isNodeSelected", target_parent_node)) {
             // allow use to select (on/off) the target node
-            this.annotationsTree.tree('addToSelection', target_node);
+            this.annotationsTree.tree("addToSelection", target_node);
             regions_info.shape_defaults.FastMal_Text.add(node_id);
             this.context.publish(FASTMAL_SELECTED, {shape_id: this.lastActiveShape}); // fires regions-drawing.onDrawShape()
             return true;
@@ -340,18 +340,18 @@ export default class FastMal {
     refreshDatasetRoiInfo(dataset_id, async=true) {
         // If dataset id not given, use the current dataset
         if (dataset_id == null) {
-            dataset_id = this.datasetRoiInfo['dataset_id'];
+            dataset_id = this.datasetRoiInfo["dataset_id"];
         }
 
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
-            url : '/iviewer/fastmal_data/' + dataset_id + '/',
-            async : async, // appara
-            dataType: 'json',
+            url : "/iviewer/fastmal_data/" + dataset_id + "/",
+            async : async,
+            dataType: "json",
             success : (response) => {
                 try {
                     this.datasetRoiInfo = response;
-                    this.datasetRoiInfo['dataset_id'] = dataset_id;
+                    this.datasetRoiInfo["dataset_id"] = dataset_id;
                     this.setInProgressImageIds();
 
                     // add "off" to the project roi labels (at the beginning of the list)
@@ -383,8 +383,8 @@ export default class FastMal {
     setInProgressImageIds() {
         // for each image that has annotations, add it to the 'in progress' array if it is not
         // linked to the FASTMAL_ROI_COMPLETE tag
-        this.imagesAnnotationInProgress = Object.keys(this.datasetRoiInfo['images_with_rois']).reduce((acc, image_id) => {
-            if (!(image_id in this.datasetRoiInfo['images_roi_complete']))
+        this.imagesAnnotationInProgress = Object.keys(this.datasetRoiInfo["images_with_rois"]).reduce((acc, image_id) => {
+            if (!(image_id in this.datasetRoiInfo["images_roi_complete"]))
                 acc.push(image_id);
             return acc;
         }, [])
@@ -394,19 +394,19 @@ export default class FastMal {
      * Handles the updating of the range in CROWD roi annotation
      */
     updateCrowdRange(shape, event_in) {
-        const shape_id = shape['@id'];
+        const shape_id = shape["@id"];
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
-            url : '/iviewer/fastmal_shape_annotation/' + shape_id + '/CrowdRange/' + event_in.target.value + '/',
+            url : "/iviewer/fastmal_shape_annotation/" + shape_id + "/CrowdRange/" + event_in.target.value + "/",
             async : true,
             success : (response) => {
                 try {
                     if ("error" in response) {
-                        event_in.target.value = '???';
+                        event_in.target.value = "???";
                     } else if ("msg" in response) {
-                        console.log('CrowdRange saved');
-                        event_in.target.style.backgroundColor = 'lightgreen';
-                        setTimeout(function(){ event_in.target.style.backgroundColor='white'; }, 3000);
+                        console.log("CrowdRange saved");
+                        event_in.target.style.backgroundColor = "lightgreen";
+                        setTimeout(function(){ event_in.target.style.backgroundColor="white"; }, 3000);
                     } else {
                         event_in.target.value = "???";
                     }
@@ -425,15 +425,15 @@ export default class FastMal {
      * Gets crowd range annotation, if any, for a given shape
      */
     getCrowdRange(shape, element) {
-        const shape_id = shape['@id'];
+        const shape_id = shape["@id"];
         $.ajax({
             // this.context.getPrefixedURI(IVIEWER) is not ready...?
-            url : '/iviewer/fastmal_shape_annotation/' + shape_id + '/CrowdRange/',
+            url : "/iviewer/fastmal_shape_annotation/" + shape_id + "/CrowdRange/",
             async : true,
             success : (response) => {
                 try {
                     if ("error" in response && response["error"] === "Annotation not found") {
-                        element.value = '';
+                        element.value = "";
                     } else if ("msg" in response && response["msg"] === "MapAnnotation found") {
                         element.value = response["annotation"][1];
                     } else {
@@ -454,31 +454,31 @@ export default class FastMal {
      * Returns HTML required for links to previous and next image in dataset
      */
     getLinkToPrevNext(currentId) {
-        const base_url = '/iviewer/?dataset=' + this.datasetRoiInfo['dataset_id'];
-        const currentIndex = this.datasetRoiInfo['image_ids'].indexOf(currentId);
+        const base_url = "/iviewer/?dataset=" + this.datasetRoiInfo["dataset_id"];
+        const currentIndex = this.datasetRoiInfo["image_ids"].indexOf(currentId);
 
         // link to next image
-        let next_url = '';
-        let next_html = '';
-        if (currentIndex < this.datasetRoiInfo['image_ids'].length - 1) {
-            next_url = base_url + '&images=' + this.datasetRoiInfo['image_ids'][currentIndex + 1];
-            next_html = '<a style="color:white;" href="' + next_url +'">next</a>';
+        let next_url = "";
+        let next_html = "";
+        if (currentIndex < this.datasetRoiInfo["image_ids"].length - 1) {
+            next_url = base_url + "&images=" + this.datasetRoiInfo["image_ids"][currentIndex + 1];
+            next_html = "<a style=\"color:white;\" href=\"" + next_url + "\">next</a>";
         }
 
         // link to previous image
-        let prev_url = '';
-        let prev_html = '';
+        let prev_url = "";
+        let prev_html = "";
         if (currentIndex > 0) {
-            prev_url = base_url + '&images=' + this.datasetRoiInfo['image_ids'][currentIndex - 1];
-            prev_html = '<a style="color:white;" href="' + prev_url +'">previous</a>';
+            prev_url = base_url + "&images=" + this.datasetRoiInfo["image_ids"][currentIndex - 1];
+            prev_html = "<a style=\"color:white;\" href=\"" + prev_url + "\">previous</a>";
         }
 
         // put the two urls together
-        let delim = '';
+        let delim = "";
         if (next_url.length > 0 && prev_url.length > 0) {
-            delim = ', ';
+            delim = ", ";
         }
-        return '( ' + prev_html + delim + next_html + ' )';
+        return "( " + prev_html + delim + next_html + " )";
     }
 
     /**
@@ -504,7 +504,7 @@ export default class FastMal {
         labels = labels.join();
 
         $.ajax({
-            url : '/iviewer/fastmal_roi_comment/' + roiId + '/' + labels + '/',
+            url : "/iviewer/fastmal_roi_comment/" + roiId + "/" + labels + "/",
             async : true,
             success : (response) => {
                 try {
