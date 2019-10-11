@@ -17,16 +17,7 @@
 -->
 
 <template>
-    <div class="row regions-drawing" style="height: 50px; padding-bottom:10px;">
-        <!-- FASt-Mal: Remove shape selection (set by 'off')
-        <div class="draw-icons draw-select-icon
-                    ${regions_info.shape_to_be_drawn === null ?
-                        'draw-active' : 'draw-inactive'}"
-             title="Select shape(s)"
-             style="margin-right: 30px"
-             click.delegate="onDrawShape(-1)">
-        </div>
-        -->
+    <div class="row regions-drawing" style="padding-bottom:10px;">
         <div class="draw-icons" style="margin-right:30px; margin-top:10px;">Shape:</div>
         <div repeat.for="shape of supported_shapes"
             class="draw-icons draw-${shape}-icon
@@ -35,5 +26,7 @@
             click.delegate="onDrawShape($index)"
             title="Draw ${shape}" />
     </div>
+    <br />
     <hr />
+    <br />
 </template>

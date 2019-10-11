@@ -17,11 +17,12 @@
 -->
 
 <template>
+    <!-- FastMal: link to the images that do not have the 'ROI complete' tag (i.e. have some ROIs but not finished) -->
     <div>
         In progress:
-        <a repeat.for="image_id of context.fastMal.fastmal_inprogress_images"
+        <a repeat.for="image_id of context.fastMal.images_in_progress"
             id="inprogress-${image_id}"
-            href="/iviewer/?dataset=${context.fastMal.datasetRoiCounts['dataset_id']}&images=${image_id}">
+            href="/iviewer/?dataset=${context.fastMal.datasetRoiInfo['dataset_id']}&images=${image_id}">
             ${image_id}
         </a>
     </div>
@@ -41,7 +42,7 @@
     <div class="thumbnail-scroll-panel"
         show.bind="!requesting_thumbnail_data">
         <template repeat.for="thumb of thumbnails">
-             <div click.delegate="onClick(thumb.id)" style="${image_config.image_info.image_id === thumb.id ? 'font-weight: bold' : 'font-weight: normal'}"/>${thumb.title}:</div> ${thumb.roiCounts} ${context.fastMal.getCompletedRoiIndicator(thumb.id)}
+             <div click.delegate="onClick(thumb.id)" style="font-weight: ${image_config.image_info.image_id === thumb.id ? 'bold' : 'normal'}">${thumb.title}:</div> ${thumb.roiCounts} ${context.fastMal.getCompletedRoiIndicator(thumb.id)}
         </template>
         <br />
         <br />

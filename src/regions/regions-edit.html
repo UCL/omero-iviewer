@@ -17,32 +17,6 @@
 -->
 <template>
         <div class="shapes-edit">
-            <!-- FASt-Mal: hide stroke colour/width inputs
-            <div class="shape-fill-color"><input class="spectrum-input"/></div>
-            <div class="shape-stroke-color"><input class="spectrum-input"/></div>
-            <div class="shape-stroke-width"><input /></div>
-            -->
-
-            <!-- FASt-Mal: hide arrow shape for line inputs
-            <div class="dropdown rois-dropdown arrow-button"
-                 title="Toggle arrow heads">
-                <button type="button"
-                    class="btn btn-default btn-sm dropdown-toggle"
-                    disabled="disabled"
-                data-toggle="dropdown">&nbsp;</button>
-                <ul class="dropdown-menu">
-                    <li click.delegate="toggleArrow(false)">
-                        <span class="marker_start"></span>
-                        <a href="#">Start</a>
-                    </li>
-                    <li click.delegate="toggleArrow(true)">
-                        <span class="marker_end"></span>
-                        <a href="#">End</a>
-                    </li>
-                </ul>
-            </div>
-            -->
-
             <div class="dropdown rois-dropdown">
                 <button type="button"
                         class="btn btn-default btn-sm dropdown-toggle 
@@ -50,18 +24,6 @@
                         data-toggle="dropdown">Edit
                 </button>
                 <ul class="dropdown-menu">
-                    <!-- FASt-Mal: remove copy & paste functionality
-                    <li if.bind="regions_info && regions_info.selected_shapes &&
-                                    regions_info.selected_shapes.length !== 0"
-                        click.delegate="copyShapes()">
-                            <a href="#">Copy</a>
-                    </li>
-                    <li if.bind="regions_info.copied_shapes.length !== 0 &&
-                                 regions_info.image_info.can_annotate"
-                         click.delegate="pasteShapes()">
-                            <a href="#">Paste</a>
-                    </li>
-                    -->
                     <li click.delegate="selectAllShapes()"><a href="#">Select All</a></li>
                 </ul>
             </div>
@@ -74,16 +36,14 @@
             </div>
         </div>
 
-        <!-- FASt-Mal: display ROI type selection radio buttons -->
+        <!-- FastMal: display ROI type selection radio buttons -->
         <div style="float: left; padding-top: 15px;">
             Select ROI:<br /><br />
 
-            <div id="tree1"></div>
-
-
+            <div id="fastMalAnnotationsTree"></div>
 
             <br /><br />
-            <label><input type="checkbox" checked.bind="context.fastMal.fastmal_selected_roi_complete" name="fastmal_roi_complete" click.delegate="context.fastMal.updateRoiCompleteTag($event.target.checked)" /> ROI annotation complete</label>
+            <label><input type="checkbox" checked.bind="context.fastMal.selected_roi_complete" name="fastmal_roi_complete" click.delegate="context.fastMal.updateRoiCompleteTag($event.target.checked)" /> ROI annotation complete</label>
             <br />
         </div>
 

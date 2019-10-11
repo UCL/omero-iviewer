@@ -1,5 +1,5 @@
 /**
- * FASt-Mal modifications to omero-iviewer code.
+ * FastMal modifications to omero-iviewer code.
  *
  * Usage is peppered throughout the omero-iviewer code
  */
@@ -21,23 +21,23 @@ export default class FastMal {
     /**
      * Used by regions-edit.html to bind the currently selected type
      */
-    fastmal_roi_types = null;
-    fastmal_selected_roi_complete = null;
-    fastmal_inprogress_images = [];
+    roi_types = null;
+    selected_roi_complete = null;
+    images_in_progress = [];
 
-    fastmal_roi_tree_element = null;
+    roi_tree_element = null;
 
-    fastmal_shape_labels = { };
+    shape_labels = { };
 
     /**
      * Stores the current active shape
      */
-    fastmal_last_active_shape = 0; // rectangle
+    last_active_shape = 0; // rectangle
 
     /**
      * Holds the ROI information about a given dataset
      */
-    datasetRoiCounts = null;
+    datasetRoiInfo = null;
 
     userInfo = null;
 
@@ -59,7 +59,7 @@ export default class FastMal {
     constructor(context) {
         this.context = context;
         // by default, use thick film types
-        this.fastmal_roi_types = FastMal.NO_ROI_LABELS_DEFINED;
+        this.roi_types = FastMal.NO_ROI_LABELS_DEFINED;
         this.setUserInfo();
         console.log('Instantiated FastMal', this);
     }
@@ -94,15 +94,16 @@ export default class FastMal {
      * Save the secondary labels for a given shape
      * The shape_id is the "old id" used whilst drawing
      */
-    saveShapeLabel(shape_id, label_set) {
-        console.log('saveShapeLabel', [shape_id, label_set]);
-        if (shape_id in this.fastmal_shape_labels) {
-            console.err("shape_id " + shape_id + " already exists fastmal_shape_labels");
-            console.log(this.fastmal_shape_labels);
+    saveShapeLabel(shape_id) {
+        const label_set = this.getRegionsInfo().shape_defaults.FastMal_Text;
+        console.log('FastMal.saveShapeLabel', [shape_id, label_set]);
+        if (shape_id in this.shape_labels) {
+            console.err("shape_id " + shape_id + " already exists in shape_labels");
+            console.log(this.shape_labels);
         } else {
             if (label_set.size > 0) {
                 console.log('saved shaped label for ' + shape_id, label_set);
-                this.fastmal_shape_labels[shape_id] = new Set(label_set);
+                this.shape_labels[shape_id] = new Set(label_set);
             }
         }
     }
@@ -111,7 +112,7 @@ export default class FastMal {
      * Returns the ROI types valid for this type of image
      */
     getRoiTypes() {
-        return this.datasetRoiCounts.project_roi_labels;
+        return this.datasetRoiInfo.project_roi_labels;
     }
 
     /**
@@ -134,19 +135,19 @@ export default class FastMal {
      * Called by regions-list.js when ROI list changes.
      */
     getRoiTypeCountsHTML(regions_info) {
-        if (this.context.getSelectedImageConfig().image_info.image_id.toString() in this.datasetRoiCounts['images_roi_complete']) {
-            this.fastmal_selected_roi_complete = true;
+        if (this.context.getSelectedImageConfig().image_info.image_id.toString() in this.datasetRoiInfo['images_roi_complete']) {
+            this.selected_roi_complete = true;
         } else {
-            this.fastmal_selected_roi_complete = false;
+            this.selected_roi_complete = false;
         }
         const counts = this.getRoiTypeCounts(regions_info);
         const roi_types = this.getRoiTypes();
-        this.fastmal_roi_types = roi_types;
+        this.roi_types = roi_types;
         let html = "";
         // total = ROI type counts for image; grandTotal = ROI type counts for dataset
-        let total, grandTotal, iCount;
-        const datasetCounts = this.datasetRoiCounts['roi_type_count'];
-        const imageCounts = this.datasetRoiCounts['images_per_roi'];
+        let total = 0, grandTotal = 0, iCount = 0;
+        const datasetCounts = this.datasetRoiInfo['roi_type_count'];
+        const imageCounts = this.datasetRoiInfo['images_per_roi'];
         for (let i = 1; i < roi_types.length; i++) {
             total = counts[roi_types[i].id] ? counts[roi_types[i].id] : 0;
             grandTotal = datasetCounts[roi_types[i].id] ? datasetCounts[roi_types[i].id] : 0;
@@ -162,10 +163,10 @@ export default class FastMal {
      */
     getRoiTypeCountsForImage(image_id) {
         const roi_types = this.getRoiTypes();
-        this.fastmal_roi_types = roi_types;
+        this.roi_types = roi_types;
         let counts = [];
-        if (image_id in this.datasetRoiCounts["images_with_rois"]) {
-            const lookup = this.datasetRoiCounts["images_with_rois"][image_id.toString()];
+        if (image_id in this.datasetRoiInfo["images_with_rois"]) {
+            const lookup = this.datasetRoiInfo["images_with_rois"][image_id.toString()];
             for (let i = 1; i < roi_types.length; i++) {
                 counts.push(lookup[roi_types[i].id] ? lookup[roi_types[i].id] : 0);
             }
@@ -210,7 +211,7 @@ export default class FastMal {
     /**
      * Triggered by regions-edit.js when user clicks on 'Select ROI' list
      */
-    fastmalRoiClick(id) {
+    annotationsTreeClick(id) {
         return this.roiTypeSelected(id);
     }
 
@@ -219,9 +220,9 @@ export default class FastMal {
      * for complete/in progress/no ROI annotations
      */
     getCompletedRoiIndicator(image_id) {
-        if (image_id.toString() in this.datasetRoiCounts['images_roi_complete']) {
+        if (image_id.toString() in this.datasetRoiInfo['images_roi_complete']) {
             return '✔';
-        } else if (image_id.toString() in this.datasetRoiCounts['images_with_rois']) {
+        } else if (image_id.toString() in this.datasetRoiInfo['images_with_rois']) {
             return '✘';
         }
         return '';
@@ -231,7 +232,7 @@ export default class FastMal {
      * Set regions drawing default for a given type
      */
     roiTypeSelected(type_id) {
-        const node_level = this.fastmal_roi_tree_element.tree('getNodeById', type_id).getLevel();
+        const node_level = this.roi_tree_element.tree('getNodeById', type_id).getLevel();
 
         if (node_level == 1) {
             return this.roiPrimaryLabelSelected(type_id);
@@ -250,23 +251,23 @@ export default class FastMal {
         const regions_info = this.getRegionsInfo()
 
         // deselect all nodes
-        const selected = this.fastmal_roi_tree_element.tree('getState').selected_node;
+        const selected = this.roi_tree_element.tree('getState').selected_node;
         for (let i = 0; i < selected.length; i++) {
-            const node = this.fastmal_roi_tree_element.tree('getNodeById', selected[i]);
-            this.fastmal_roi_tree_element.tree('removeFromSelection', node);
+            const node = this.roi_tree_element.tree('getNodeById', selected[i]);
+            this.roi_tree_element.tree('removeFromSelection', node);
         }
 
         // close all open nodes
-        const open_nodes = this.fastmal_roi_tree_element.tree('getState').open_nodes;
+        const open_nodes = this.roi_tree_element.tree('getState').open_nodes;
         for (let i = 0; i < open_nodes.length; i++) {
-            const node = this.fastmal_roi_tree_element.tree('getNodeById', open_nodes[i]);
-            this.fastmal_roi_tree_element.tree('closeNode', node);
+            const node = this.roi_tree_element.tree('getNodeById', open_nodes[i]);
+            this.roi_tree_element.tree('closeNode', node);
         }
 
         // select ond open only the selected node       
-        const node = this.fastmal_roi_tree_element.tree('getNodeById', type_id);
-        this.fastmal_roi_tree_element.tree('selectNode', node, { mustToggle: false });
-        this.fastmal_roi_tree_element.tree('openNode', node);
+        const node = this.roi_tree_element.tree('getNodeById', type_id);
+        this.roi_tree_element.tree('selectNode', node, { mustToggle: false });
+        this.roi_tree_element.tree('openNode', node);
 
         // If we're turning off ROI shapes (i.e. select mode)
         if (type_id == "FASTMAL:OFF") {
@@ -280,11 +281,11 @@ export default class FastMal {
         regions_info.shape_defaults.Text = type_id; 
         regions_info.shape_defaults.FastMal_Text = new Set();
 
-        const selected_node = this.fastmal_roi_tree_element.tree('getNodeById', type_id);    
+        const selected_node = this.roi_tree_element.tree('getNodeById', type_id);
         const rgb_string = 'rgb(' + selected_node.colour + ')';
         regions_info.shape_defaults.StrokeColor = Converters.rgbaToSignedInteger(rgb_string);
 
-        this.context.publish(FASTMAL_SELECTED, {shape_id: this.fastmal_last_active_shape}); // fires regions-drawing.onDrawShape()
+        this.context.publish(FASTMAL_SELECTED, {shape_id: this.last_active_shape}); // fires regions-drawing.onDrawShape()
         return true;
     }
 
@@ -295,25 +296,25 @@ export default class FastMal {
         const regions_info = this.getRegionsInfo();
 
         // get the node that user wants to select (target node)
-        const target_node = this.fastmal_roi_tree_element.tree('getNodeById', type_id);
+        const target_node = this.roi_tree_element.tree('getNodeById', type_id);
         const target_parent_node = target_node.parent;
 
         // if the target node is currently selected
-        if (this.fastmal_roi_tree_element.tree('isNodeSelected', target_node)) {
+        if (this.roi_tree_element.tree('isNodeSelected', target_node)) {
             // turn off selection
-            this.fastmal_roi_tree_element.tree('removeFromSelection', target_node);
+            this.roi_tree_element.tree('removeFromSelection', target_node);
             regions_info.shape_defaults.FastMal_Text.delete(type_id);
-            this.context.publish(FASTMAL_SELECTED, {shape_id: this.fastmal_last_active_shape}); // fires regions-drawing.onDrawShape()
+            this.context.publish(FASTMAL_SELECTED, {shape_id: this.last_active_shape}); // fires regions-drawing.onDrawShape()
             console.log('1: ', regions_info.shape_defaults.FastMal_Text);
             return true;
         }
         
         // if the parent node is currently the selected node
-        if (this.fastmal_roi_tree_element.tree('isNodeSelected', target_parent_node)) {
+        if (this.roi_tree_element.tree('isNodeSelected', target_parent_node)) {
             // allow use to select (on/off) the target node
-            this.fastmal_roi_tree_element.tree('addToSelection', target_node);
+            this.roi_tree_element.tree('addToSelection', target_node);
             regions_info.shape_defaults.FastMal_Text.add(type_id);
-            this.context.publish(FASTMAL_SELECTED, {shape_id: this.fastmal_last_active_shape}); // fires regions-drawing.onDrawShape()
+            this.context.publish(FASTMAL_SELECTED, {shape_id: this.last_active_shape}); // fires regions-drawing.onDrawShape()
             console.log('2: ', regions_info.shape_defaults.FastMal_Text);
             return true;
         } else {
@@ -327,8 +328,9 @@ export default class FastMal {
      * in instance variable
      */
     refreshDatasetRoiCounts(dataset_id, async=true) {
+        // If dataset id not given, use the current dataset
         if (dataset_id == null) {
-            dataset_id = this.datasetRoiCounts['dataset_id'];
+            dataset_id = this.datasetRoiInfo['dataset_id'];
         }
 
         $.ajax({
@@ -338,28 +340,28 @@ export default class FastMal {
             dataType: 'json',
             success : (response) => {
                 try {
-                    this.datasetRoiCounts = response;
-                    this.datasetRoiCounts['dataset_id'] = dataset_id;
+                    this.datasetRoiInfo = response;
+                    this.datasetRoiInfo['dataset_id'] = dataset_id;
                     this.setInProgressImageIds();
 
                     // add "off" to the project roi labels
-                    this.datasetRoiCounts.project_roi_labels.unshift(
+                    this.datasetRoiInfo.project_roi_labels.unshift(
                         { "name": "Off", "id": "FASTMAL:OFF" }
                     );
                     // give each top-level roi label an id and a colour
-                    for (let i = 1; i < this.datasetRoiCounts.project_roi_labels.length; i++) {
-                        this.datasetRoiCounts.project_roi_labels[i]["colour"] = this.lineColours[i];
+                    for (let i = 1; i < this.datasetRoiInfo.project_roi_labels.length; i++) {
+                        this.datasetRoiInfo.project_roi_labels[i]["colour"] = this.lineColours[i];
                     }
 
                     this.context.publish(FASTMAL_COUNT_UPDATE, {}); // fires regions-list.updateRoiCounts()
                     this.context.publish(FASTMAL_THUMBNAIL_REFRESH, {});
                 } catch(err) {
                     console.error("Failed to load Rois: ");
-                    this.datasetRoiCounts = err.responseJSON;
+                    this.datasetRoiInfo = err.responseJSON;
                 }
             }, error : (error) => {
                 console.error("Failed to load Rois: ")
-                this.datasetRoiCounts = error.responseJSON;
+                this.datasetRoiInfo = error.responseJSON;
             }
         });
     }
@@ -370,12 +372,12 @@ export default class FastMal {
      */
     setInProgressImageIds() {
         let image_ids = [];
-        for (let image_id in this.datasetRoiCounts['images_with_rois']) {
-            if (!(image_id in this.datasetRoiCounts['images_roi_complete'])) {
+        for (let image_id in this.datasetRoiInfo['images_with_rois']) {
+            if (!(image_id in this.datasetRoiInfo['images_roi_complete'])) {
                 image_ids.push(image_id);
             }
         }
-        this.fastmal_inprogress_images = image_ids;
+        this.images_in_progress = image_ids;
     }
 
     /**
@@ -442,14 +444,14 @@ export default class FastMal {
      * Returns HTML required for links to previous and next image in dataset
      */
     getLinkToPrevNext(currentId) {
-        const base_url = '/iviewer/?dataset=' + this.datasetRoiCounts['dataset_id'];
-        const currentIndex = this.datasetRoiCounts['image_ids'].indexOf(currentId);
+        const base_url = '/iviewer/?dataset=' + this.datasetRoiInfo['dataset_id'];
+        const currentIndex = this.datasetRoiInfo['image_ids'].indexOf(currentId);
 
         // link to next image
         let next_url = '';
         let next_html = '';
-        if (currentIndex < this.datasetRoiCounts['image_ids'].length - 1) {
-            next_url = base_url + '&images=' + this.datasetRoiCounts['image_ids'][currentIndex + 1];
+        if (currentIndex < this.datasetRoiInfo['image_ids'].length - 1) {
+            next_url = base_url + '&images=' + this.datasetRoiInfo['image_ids'][currentIndex + 1];
             next_html = '<a style="color:white;" href="' + next_url +'">next</a>';
         }
 
@@ -457,7 +459,7 @@ export default class FastMal {
         let prev_url = '';
         let prev_html = '';
         if (currentIndex > 0) {
-            prev_url = base_url + '&images=' + this.datasetRoiCounts['image_ids'][currentIndex - 1];
+            prev_url = base_url + '&images=' + this.datasetRoiInfo['image_ids'][currentIndex - 1];
             prev_html = '<a style="color:white;" href="' + prev_url +'">previous</a>';
         }
 
@@ -470,11 +472,11 @@ export default class FastMal {
     }
 
     linkRoiComment(roiId, key) {
-        if (!(key in this.fastmal_shape_labels)) {
+        if (!(key in this.shape_labels)) {
             return;
         }
 
-        let labels = Array.from(this.fastmal_shape_labels[key]);
+        let labels = Array.from(this.shape_labels[key]);
 
         if (labels.length == 0) {
             return;

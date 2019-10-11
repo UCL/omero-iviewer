@@ -121,7 +121,7 @@ export default class Context {
      * @memberof Context
      * @type {String}
      */
-     selected_tab = TABS.ROIS;     // FASt-Mal: we prefer to display the ROI tab on load
+     selected_tab = TABS.ROIS;     // FastMal: we prefer to display the ROI tab on load
 
      /**
       * should interpolation should be used for image rendering?
@@ -159,7 +159,10 @@ export default class Context {
          height : 0
      }
 
-    
+    /**
+     * reference to the fastmal instance
+     * @type {Object}
+     */
      fastMal = null;
 
     /**
@@ -194,6 +197,7 @@ export default class Context {
         // set up luts
         this.setUpLuts();
 
+        // create fastmal and add to context
         this.fastMal = new FastMal(this);
 
         // open what we received as inital parameter
@@ -299,13 +303,15 @@ export default class Context {
         if (typeof initial_dataset_id !== 'number' || isNaN(initial_dataset_id))
             initial_dataset_id = null;
 
-        // FASt-Mal only works at the dataset level
+        // FastMal only works at the dataset level
         if (initial_dataset_id == null) {
             return;
         } else {
+            // Load the FastMal dataset information re. ROIs etc
             this.fastMal.refreshDatasetRoiCounts(initial_dataset_id, false);
-            if ('error' in this.fastMal.datasetRoiCounts ||
-                this.fastMal.datasetRoiCounts['image_ids'].length == 0) {
+            // Can't continue if the refreshing wasn't successful
+            if ('error' in this.fastMal.datasetRoiInfo ||
+                this.fastMal.datasetRoiInfo['image_ids'].length === 0) {
                 return;
             }
         }

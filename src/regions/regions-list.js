@@ -114,7 +114,7 @@ export default class RegionsList extends EventSubscriber {
             this.subscribe();
             setTimeout(() => this.setTableHeight(), 50);
 
-            // FASt-Mal: count ROI types on load
+            // FastMal: count ROI types on load
             setTimeout(() => this.updateRoiCounts(), 50);
         };
 
@@ -160,7 +160,7 @@ export default class RegionsList extends EventSubscriber {
                         $('#shapes_visibility_toggler').prop(
                             'checked', newValue === 0)));
 
-        // FASt-Mal: update the summary ROI counts on list change
+        // FastMal: update the summary ROI counts on list change
         this.observers.push(
             this.bindingEngine.propertyObserver(
                 this.regions_info, 'number_of_shapes').subscribe(
@@ -232,7 +232,7 @@ export default class RegionsList extends EventSubscriber {
         $('.regions-header').width($('.regions-table-first-row').width());
     }
 
-    // FASt-Mal: update the ROI counts
+    // FastMal: update the ROI counts
     updateRoiCounts() {
         $('.fastmal-summary').html(this.context.fastMal.getRoiTypeCountsHTML(this.regions_info));
     }
@@ -389,7 +389,7 @@ export default class RegionsList extends EventSubscriber {
         this.unregisterObservers();
     }
 
-    // FASt-Mal
+    // FastMal
     /**
      * Apply changes to crowd range annotation
      */

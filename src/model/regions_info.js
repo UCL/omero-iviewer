@@ -260,7 +260,7 @@ export default class RegionsInfo  {
             url : this.image_info.context.server +
                   this.image_info.context.getPrefixedURI(WEB_API_BASE) +
                   REGIONS_REQUEST_URL + '/?image=' + this.image_info.image_id +
-                  '&limit=' + this.REQUEST_LIMIT + '&owner=' + this.image_info.context.fastMal["userInfo"].id,
+                  '&limit=' + this.REQUEST_LIMIT + '&owner=' + this.image_info.context.fastMal["userInfo"].id,  // FastMal: only return ROIs for the currently logged-in user
             success : (response) => {
                 this.is_pending = false;
                 try {
@@ -462,9 +462,9 @@ export default class RegionsInfo  {
             '@type': 'TBD#LengthI',
             'Unit': 'PIXEL',
             'Symbol': 'pixel',
-            'Value': 3  // FASt-Mal: a thicker default stroke width
+            'Value': 3  // FastMal: a thicker default stroke width
         };
-        this.shape_defaults['FastMal_Text'] = new Set();  // FASt-Mal: store for secondary labels
+        this.shape_defaults['FastMal_Text'] = new Set();  // FastMal: store for secondary labels
     }
 
     /**

@@ -769,7 +769,7 @@ export default class Ol3Viewer extends EventSubscriber {
                     newRoi.shapes.set(newRoiAndShapeId.shape_id, newShape);
                     shape.deleted = true; // take out old entry
 
-                    // FASt-Mal: save secondary labels as CommentAnnotations on Roi
+                    // FastMal: save secondary labels as CommentAnnotations on Roi
                     console.log('linkRoiComment', [newRoiAndShapeId.roi_id, id]);
                     this.context.fastMal.linkRoiComment(newRoiAndShapeId.roi_id, id);
                 }
@@ -799,7 +799,7 @@ export default class Ol3Viewer extends EventSubscriber {
         this.image_config.image_info.roi_count =
             this.image_config.regions_info.data.size;
 
-        // update FASt-Mal ROI counts
+        // update FastMal ROI counts
         this.context.fastMal.refreshDatasetRoiCounts(null, true);
 
         // if we stored as part of a delete request we need to clean up

@@ -137,7 +137,7 @@ export default class RegionsEdit extends EventSubscriber {
     waitForRegionsInfoReady() {
         if (this.regions_info === null) return;
 
-        // FASt-Mal: reset default selection for ROI type
+        // FastMal: reset default selection for ROI type
         this.context.fastMal.roiTypeSelected("FASTMAL:OFF"); 
 
         let onceReady = () => {
@@ -196,25 +196,23 @@ export default class RegionsEdit extends EventSubscriber {
         fontSizeSpinner.spinner({min: 1, disabled: true});
         fontSizeSpinner.spinner("value", 10);
 
-        // FASt-Mal: setup ROI label tree
-        const $tree = $('#tree1');
-        this.context.fastMal.fastmal_roi_tree_element = $tree;
-        
-        var data = this.context.fastMal.datasetRoiCounts.project_roi_labels;
+        // FastMal: setup ROI label tree
+        const $tree = $('#fastMalAnnotationsTree');
+        this.context.fastMal.roi_tree_element = $tree;
+
+        // Set the data for the tree
+        var data = this.context.fastMal.datasetRoiInfo.project_roi_labels;
         $tree.tree({data: data});
 
+        // Override default click-handler, pass to FastMal class
         function tree_click(context) {
             return function(event) {
                 event.preventDefault();
                 var node = event.node;
-                context.fastMal.fastmalRoiClick(node.id);
+                context.fastMal.annotationsTreeClick(node.id);
             }
         }
-
-        $tree.on(
-            'tree.click',
-            tree_click(this.context)
-        );
+        $tree.on('tree.click', tree_click(this.context));
     }
 
      /**
@@ -697,7 +695,7 @@ export default class RegionsEdit extends EventSubscriber {
      * @memberof RegionsEdit
      */
     adjustStrokeEdit(canDo=false, showDisabled=true) {
-        // FASt-Mal: we don't want to override selection using the ROI type radio buttons
+        // FastMal: we don't want to override selection using the ROI type radio buttons
         return;
         let type =
             this.last_selected ? this.last_selected.type.toLowerCase() : null;

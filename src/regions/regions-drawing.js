@@ -233,7 +233,7 @@ export default class RegionsDrawing extends EventSubscriber {
         // we update the overall number of shapes
         this.regions_info.number_of_shapes += len;
 
-        // FASt-Mal: Simulated a shape select and comment change
+        // FastMal: Simulate a shape select and comment change
         this.regions_info.selected_shapes = [generatedShapes[len-1].oldId];
         this.context.publish(
             FASTMAL_COMMENT_UPDATE,
@@ -242,9 +242,8 @@ export default class RegionsDrawing extends EventSubscriber {
                 shape: generatedShapes[len-1]
             });
 
-        // FASt-Mal: save the currently selected second-level labels for this shape
-        console.log('regiondrawing', [generatedShapes[len-1]['shape_id'], this.regions_info.shape_defaults.FastMal_Text]);
-        this.context.fastMal.saveShapeLabel(generatedShapes[len-1]['shape_id'], this.regions_info.shape_defaults.FastMal_Text);
+        // FastMal: save the currently selected second-level labels for this shape
+        this.context.fastMal.saveShapeLabel(generatedShapes[len-1]['shape_id']);
         
         // we only continue if we have been drawn and intend to propagate
         if (params.drawn)
@@ -301,13 +300,13 @@ export default class RegionsDrawing extends EventSubscriber {
             abort = true;
             this.regions_info.shape_to_be_drawn = null;
         } else if (this.regions_info.shape_defaults.Text == null || this.regions_info.shape_defaults.Text === '') {
-            // fastmal: only allow selection of shape if user has selected ROI type
+            // FastMal: only allow selection of shape if user has selected ROI type
             abort = true;
             this.regions_info.shape_to_be_drawn = null;
         } else {
             this.regions_info.shape_to_be_drawn = this.supported_shapes[index];
             // save the selected type for fastmal
-            this.context.fastMal.fastmal_last_active_shape = index;
+            this.context.fastMal.last_active_shape = index;
         }
 
         // define shape to be drawn including any pre-set defaults (e.g. colors)

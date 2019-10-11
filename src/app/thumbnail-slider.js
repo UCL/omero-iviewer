@@ -199,7 +199,7 @@ export default class ThumbnailSlider extends EventSubscriber {
             setTimeout(() =>
                 UI.showModalMessage(
                     // 'Viewer opened without image, dataset or well id!','OK'),
-                    // FASt-Mal message:
+                    // FastMal message:
                     'No images to annotate in this dataset!','OK'),
             100);
             return;
@@ -504,8 +504,8 @@ export default class ThumbnailSlider extends EventSubscriber {
                 roiCounts : this.context.fastMal.getRoiTypeCountsForImage(id)
             }
 
-            // FASt-Mal check whether we should display this image to annotate
-            if (this.context.fastMal.datasetRoiCounts.image_ids.indexOf(id) >= 0) {
+            // FastMal check whether we should display this image to annotate
+            if (this.context.fastMal.datasetRoiInfo.image_ids.indexOf(id) >= 0) {
                 if (append) {
                     this.thumbnails.push(entry);
                     this.thumbnails_end_index++;
