@@ -55,7 +55,8 @@ export default class RegionsDrawing extends EventSubscriber {
      */
     supported_shapes = [
         "rectangle",
-        "polygon"
+        "polygon",
+        "point"
     ];
 
     /**

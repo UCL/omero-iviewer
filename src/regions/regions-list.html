@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <template>
-    <div class="fastmal-summary" style="padding:5px;"></div>
+    <div class="fastmal-summary" style="padding:5px; float: left;"></div>
     <div class="regions-list">
         <div class="regions-table">
             <div class="regions-header">
@@ -73,8 +73,9 @@
                  </div>
             </div>
 
-            <div class="regions-table-row regions-table-first-row"></div>
 
+
+            <div class="regions-table-row regions-table-first-row"></div>
             <template repeat.for="[roi_id, roi] of regions_info.data">
                 <template repeat.for="[shape_id, shape] of roi.shapes">
                     <div if.bind="(roi.shapes.size - roi.deleted) > 1 &&
