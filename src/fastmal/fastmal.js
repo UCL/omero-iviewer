@@ -148,10 +148,10 @@ export default class FastMal {
         const datasetCounts = this.datasetRoiCounts['roi_type_count'];
         const imageCounts = this.datasetRoiCounts['images_per_roi'];
         for (let i = 1; i < roi_types.length; i++) {
-            total = counts[roi_types[i].code] ? counts[roi_types[i].code] : 0;
-            grandTotal = datasetCounts[roi_types[i].code] ? datasetCounts[roi_types[i].code] : 0;
-            iCount = imageCounts[roi_types[i].code] ? imageCounts[roi_types[i].code] : 0;
-            html += roi_types[i].name + ": " + total + " of " + grandTotal + " from " + iCount + "; ";
+            total = counts[roi_types[i].id] ? counts[roi_types[i].id] : 0;
+            grandTotal = datasetCounts[roi_types[i].id] ? datasetCounts[roi_types[i].id] : 0;
+            iCount = imageCounts[roi_types[i].id] ? imageCounts[roi_types[i].id] : 0;
+            html += roi_types[i].name + ": " + total + "/" + grandTotal + " from " + iCount + "; ";
         }
         return html;
     }
@@ -167,7 +167,7 @@ export default class FastMal {
         if (image_id in this.datasetRoiCounts["images_with_rois"]) {
             const lookup = this.datasetRoiCounts["images_with_rois"][image_id.toString()];
             for (let i = 1; i < roi_types.length; i++) {
-                counts.push(lookup[roi_types[i].code] ? lookup[roi_types[i].code] : 0);
+                counts.push(lookup[roi_types[i].id] ? lookup[roi_types[i].id] : 0);
             }
         } else {
             for (let i = 1; i < roi_types.length; i++) {
