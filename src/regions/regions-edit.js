@@ -198,7 +198,7 @@ export default class RegionsEdit extends EventSubscriber {
 
         // FastMal: setup ROI label tree
         const $tree = $('#fastMalAnnotationsTree');
-        this.context.fastMal.roi_tree_element = $tree;
+        this.context.fastMal.annotationsTree = $tree;
 
         // Set the data for the tree
         var data = this.context.fastMal.datasetRoiInfo.project_roi_labels;

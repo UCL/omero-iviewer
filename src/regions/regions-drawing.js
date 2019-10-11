@@ -306,7 +306,7 @@ export default class RegionsDrawing extends EventSubscriber {
         } else {
             this.regions_info.shape_to_be_drawn = this.supported_shapes[index];
             // save the selected type for fastmal
-            this.context.fastMal.last_active_shape = index;
+            this.context.fastMal.lastActiveShape = index;
         }
 
         // define shape to be drawn including any pre-set defaults (e.g. colors)

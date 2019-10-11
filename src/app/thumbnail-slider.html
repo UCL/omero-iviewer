@@ -20,7 +20,7 @@
     <!-- FastMal: link to the images that do not have the 'ROI complete' tag (i.e. have some ROIs but not finished) -->
     <div>
         In progress:
-        <a repeat.for="image_id of context.fastMal.images_in_progress"
+        <a repeat.for="image_id of context.fastMal.imagesAnnotationInProgress"
             id="inprogress-${image_id}"
             href="/iviewer/?dataset=${context.fastMal.datasetRoiInfo['dataset_id']}&images=${image_id}">
             ${image_id}
