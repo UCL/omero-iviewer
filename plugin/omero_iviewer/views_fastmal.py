@@ -1,5 +1,6 @@
 import ast
 from collections import defaultdict
+import json
 import timeit
 
 from django.http import JsonResponse
@@ -157,6 +158,26 @@ def fastmal_roi_comment(request, roi_id, comments, conn=None, **kwargs):
         roi.linkAnnotation(existing_comments[comment])
 
     return JsonResponse({'roi_id': roi.id, 'success': True, 'comments': list(comments)})
+
+
+@login_required()
+def fastmal_roi_comment2(request, conn=None, **kwargs):
+    """Links CommentAnnotation from ucl.ac.uk/fastmal/roi namespace to an Roi.
+
+    Endpoint for /iviewer/fastmal_roi_comment/roi_id/comments (list separated)
+    Creates the CommentAnnotation if it doesn't already exist
+    Comment argument can be comma-separated list of comments
+    """
+    # Switch to the active group
+    original_group_id = conn.getGroupFromContext().getId()
+    if 'active_group' in request.session:
+        conn.setGroupForSession(request.session['active_group'])
+    current_group_id = conn.getGroupFromContext().getId()
+    conn.SERVICE_OPTS.setOmeroGroup(current_group_id)
+
+    data = json.loads(request.body)
+
+    return JsonResponse({"data": data}, safe=False)
 
 
 @login_required()

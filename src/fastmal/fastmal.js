@@ -558,6 +558,49 @@ export default class FastMal {
         });
     }
 
+    linkRoiComment2(rois) {
+        console.log("linkRoiComment2", rois);
+        let toSend = [];
+        for (let i = 0; i < rois.length; i++) {
+            let pair = rois[i];
+            let newId = pair[0];
+            let oldId = pair[1];
+            if (oldId in this.shapeToLabels) {
+                let labels = Array.from(this.shapeToLabels[oldId]);
+                if (labels.length > 0) {
+                    labels = labels.join();
+                    toSend.push([newId, labels]);
+                }
+            }
+                
+        }
+
+        if (toSend.length > 0) {
+            console.log("toSend", toSend);
+            $.ajax({
+                url : "/iviewer/fastmal_roi_comment2/",
+                type : "POST",
+                contentType : "application/json",
+                data: JSON.stringify(toSend),
+                dataType: "json",
+                async : true,
+                success : (response) => {
+                    try {
+                        console.log("Success", response);
+                    } catch(error) {
+                        console.error("Error linking roi to comments", error);
+                    }
+                }, 
+                error : (error) => {
+                    console.error("Error linking roi to comments", error)
+                }
+            });
+        } else {
+            console.log("Nothing to send");
+        }
+
+    }
+
     /**
      * Given a first-level ROI label or a shape, this function returns the human-readable
      * description

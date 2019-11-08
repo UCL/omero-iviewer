@@ -735,6 +735,7 @@ export default class Ol3Viewer extends EventSubscriber {
                 params.omit_client_update) return;
 
         let ids = [];
+        let roisToComment = [];
         // we iterate over the ids given and reset states accordingly
         for (let id in params.shapes) {
             let shape = this.image_config.regions_info.getShape(id);
@@ -772,7 +773,8 @@ export default class Ol3Viewer extends EventSubscriber {
                     // FastMal: save secondary labels as CommentAnnotations on Roi
                     console.log('linkRoiComment', [newRoiAndShapeId.roi_id, id]);
                     this.context.fastMal.linkRoiComment(newRoiAndShapeId.roi_id, id);  // map the old to new shape ids
-                    this.context.fastMal.loadImageRoiComments();  // reload the roi comment lookup table
+                    // this.context.fastMal.loadImageRoiComments();  // reload the roi comment lookup table
+                    roisToComment.push([newRoiAndShapeId.roi_id, id]);
                 }
                 // we remove shapes flagged deleted=true
                 if (shape.deleted) {
@@ -795,6 +797,9 @@ export default class Ol3Viewer extends EventSubscriber {
                 }
             }
         }
+
+        this.context.fastMal.linkRoiComment2(roisToComment);
+        // this.context.fastMal.loadImageRoiComments();  // reload the roi comment lookup table
 
         // update roi count
         this.image_config.image_info.roi_count =
