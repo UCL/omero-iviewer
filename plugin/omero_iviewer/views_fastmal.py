@@ -164,9 +164,8 @@ def fastmal_roi_comment(request, roi_id, comments, conn=None, **kwargs):
 def fastmal_roi_comment2(request, conn=None, **kwargs):
     """Links CommentAnnotation from ucl.ac.uk/fastmal/roi namespace to an Roi.
 
-    Endpoint for /iviewer/fastmal_roi_comment/roi_id/comments (list separated)
+    Endpoint for /iviewer/fastmal_roi_comment2/
     Creates the CommentAnnotation if it doesn't already exist
-    Comment argument can be comma-separated list of comments
     """
     # Switch to the active group
     original_group_id = conn.getGroupFromContext().getId()
@@ -175,9 +174,50 @@ def fastmal_roi_comment2(request, conn=None, **kwargs):
     current_group_id = conn.getGroupFromContext().getId()
     conn.SERVICE_OPTS.setOmeroGroup(current_group_id)
 
-    data = json.loads(request.body)
+    all_roi_comments = json.loads(request.body)
+    # data is a list of lists
+    # sub-lists are always 2-element: [roiId, "comma-separated labels"]
 
-    return JsonResponse({"data": data}, safe=False)
+    namespace = 'ucl.ac.uk/fastmal/roi'
+    all_available_comments = {x.getValue(): x for x in conn.getObjects('CommentAnnotation') if x.getNs() == namespace}
+
+    output = {'added': [], 'created': [], 'errors': []}
+
+    # for each roi with list of labels
+    for roi_comments in all_roi_comments:
+        roi_id, comments = roi_comments
+
+        # Get Roi
+        roi = conn.getObject('Roi', roi_id)
+
+        # TODO: If roi doesn't exist, return error
+        if roi is None:
+            output['errors'].append('Roi %d not found' % roi_id)
+            continue
+
+        # Get Roi existing comment annotations
+        roi_existing_comments = [x.getTextValue() for x in roi.listAnnotations() if isinstance(x, CommentAnnotationWrapper)]
+
+        # Request comes in as UTF-8 but OMERO want plain ol' string
+        comments_to_add = set(str(comments).split(','))
+
+        # for each comment we have to add to this roi
+        for comment in comments_to_add:
+            # only add if the comment isn't already linked to the roi
+            if comment not in roi_existing_comments:
+                # if the comment to add is not currently available
+                if comment not in all_available_comments:
+                    # add it
+                    c = CommentAnnotationWrapper(conn)
+                    c.setTextValue(rstring(comment))
+                    c.setNs(namespace)
+                    c.save()
+                    all_available_comments[c.getValue()] = c
+                    output['created'].append(comment)
+                roi.linkAnnotation(all_available_comments[comment])
+                output['added'].append([roi_id, comment])
+
+    return JsonResponse(output)
 
 
 @login_required()

@@ -587,6 +587,8 @@ export default class FastMal {
                 success : (response) => {
                     try {
                         console.log("Success", response);
+                        // reload the roi comment lookup table
+                        this.context.fastMal.loadImageRoiComments();
                     } catch(error) {
                         console.error("Error linking roi to comments", error);
                     }
