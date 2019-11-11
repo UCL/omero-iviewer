@@ -109,62 +109,12 @@ def fastmal_image_roi_comments(request, image_id, conn=None, **kwargs):
 
     return JsonResponse(dict(d))
 
-@login_required()
-def fastmal_roi_comment(request, roi_id, comments, conn=None, **kwargs):
-    """Links CommentAnnotation from ucl.ac.uk/fastmal/roi namespace to an Roi.
-
-    Endpoint for /iviewer/fastmal_roi_comment/roi_id/comments (list separated)
-    Creates the CommentAnnotation if it doesn't already exist
-    Comment argument can be comma-separated list of comments
-    """
-    # Switch to the active group
-    original_group_id = conn.getGroupFromContext().getId()
-    if 'active_group' in request.session:
-        conn.setGroupForSession(request.session['active_group'])
-    current_group_id = conn.getGroupFromContext().getId()
-    conn.SERVICE_OPTS.setOmeroGroup(current_group_id)
-
-    # Get Roi
-    roi = conn.getObject('Roi', roi_id)
-
-    # TODO: If roi doesn't exist, return error
-    if roi is None:
-        return JsonResponse({'error': 'roi with id ' + roi_id + ' not found'})
-
-    # Get Roi existing comment annotations
-    roi_existing_comments = [x.getTextValue() for x in roi.listAnnotations() if isinstance(x, CommentAnnotationWrapper)]
-
-    # Comment is sent in Unicode but CommentAnnotations are str, convert to match
-    comments = set(str(comments).split(','))
-
-    # Get all CommentAnnotations for roi
-    namespace = 'ucl.ac.uk/fastmal/roi'
-    existing_comments = {x.getValue(): x for x in conn.getObjects('CommentAnnotation') if x.getNs() == namespace}
-
-    # For each comment to link to roi
-    for comment in comments:
-        # Skip if the comment already exists
-        if comment in roi_existing_comments:
-            continue
-
-        # Create and add the comment to OMERO if it doesn't exist
-        if comment not in existing_comments:
-            c = CommentAnnotationWrapper(conn)
-            c.setTextValue(rstring(comment))
-            c.setNs(namespace)
-            c.save
-            existing_comments[c.getValue()] = c
-
-        roi.linkAnnotation(existing_comments[comment])
-
-    return JsonResponse({'roi_id': roi.id, 'success': True, 'comments': list(comments)})
-
 
 @login_required()
-def fastmal_roi_comment2(request, conn=None, **kwargs):
-    """Links CommentAnnotation from ucl.ac.uk/fastmal/roi namespace to an Roi.
+def fastmal_roi_comment(request, conn=None, **kwargs):
+    """Links CommentAnnotations from ucl.ac.uk/fastmal/roi namespace to Rois
 
-    Endpoint for /iviewer/fastmal_roi_comment2/
+    Endpoint for /iviewer/fastmal_roi_comment/
     Creates the CommentAnnotation if it doesn't already exist
     """
     # Switch to the active group
