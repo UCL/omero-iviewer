@@ -771,9 +771,6 @@ export default class Ol3Viewer extends EventSubscriber {
                     shape.deleted = true; // take out old entry
 
                     // FastMal: save secondary labels as CommentAnnotations on Roi
-                    // console.log('linkRoiComment', [newRoiAndShapeId.roi_id, id]);
-                    // this.context.fastMal.linkRoiComment(newRoiAndShapeId.roi_id, id);  // map the old to new shape ids
-                    // this.context.fastMal.loadImageRoiComments();  // reload the roi comment lookup table
                     roisToComment.push([newRoiAndShapeId.roi_id, id]);
                 }
                 // we remove shapes flagged deleted=true
@@ -798,7 +795,8 @@ export default class Ol3Viewer extends EventSubscriber {
             }
         }
 
-        this.context.fastMal.linkRoiComment2(roisToComment);
+        // FastMal: pass the collected new id to old id mapping to update roi comments
+        this.context.fastMal.linkRoiComment(roisToComment);
 
         // update roi count
         this.image_config.image_info.roi_count =

@@ -521,64 +521,33 @@ export default class FastMal {
     }
 
     /**
-     * Given the id of ROI saved in OMERO db, use the old shape_id key to get secondary labels (if any)
-     * saved for the ROI and link them in OMERO as CommentAnnotations
-     * @param roiId - the id of ROI saved in OMERO db
-     * @param key - the old id of the shape used internally by omero_iviewer
+     * Takes a list of new id (from OMERO) to old id (in omero-viewer) when ROIs
+     * have been created on the OMERO server. Creates the roi-annotation links for 
+     * secondary labels (if any)
      */
-    linkRoiComment(roiId, key) {
-        // can't continue if we can't find the shape in our lookup
-        if (!(key in this.shapeToLabels)) {
-            return;
-        }
-
-        let labels = Array.from(this.shapeToLabels[key]);
-
-        // no need to continue if there are no labels to links
-        if (labels.length === 0) {
-            return;
-        }
-
-        // endpoint accepts multiple labels as comma-separated list
-        labels = labels.join();
-
-        $.ajax({
-            url : `/iviewer/fastmal_roi_comment/${roiId}/${labels}/`,
-            async : true,
-            success : (response) => {
-                try {
-                    console.log("Successfully saved " + labels + " labels to roi " + roiId, response);
-                } catch(error) {
-                    console.error("Error linking roi to comments", error);
-                }
-            }, 
-            error : (error) => {
-                console.error("Error linking roi to comments", error)
-            }
-        });
-    }
-
-    linkRoiComment2(rois) {
-        console.log("linkRoiComment2", rois);
+    linkRoiComment(rois) {
         let toSend = [];
+        // for each newId-oldId pair in the list
         for (let i = 0; i < rois.length; i++) {
             let pair = rois[i];
             let newId = pair[0];
             let oldId = pair[1];
+            // check if we have any shape labels saved under the oldId
             if (oldId in this.shapeToLabels) {
+                // collect all the labels together and add to the list
+                // to send to the OMERO server
                 let labels = Array.from(this.shapeToLabels[oldId]);
                 if (labels.length > 0) {
                     labels = labels.join();
                     toSend.push([newId, labels]);
                 }
             }
-                
         }
 
+        // if we found any rois with labels to update on the server
         if (toSend.length > 0) {
-            console.log("toSend", toSend);
             $.ajax({
-                url : "/iviewer/fastmal_roi_comment2/",
+                url : "/iviewer/fastmal_roi_comment/",
                 type : "POST",
                 contentType : "application/json",
                 data: JSON.stringify(toSend),
@@ -588,7 +557,7 @@ export default class FastMal {
                     try {
                         console.log("Success", response);
                         // reload the roi comment lookup table
-                        this.context.fastMal.loadImageRoiComments();
+                        this.loadImageRoiComments();
                     } catch(error) {
                         console.error("Error linking roi to comments", error);
                     }
@@ -600,7 +569,6 @@ export default class FastMal {
         } else {
             console.log("Nothing to send");
         }
-
     }
 
     /**
