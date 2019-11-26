@@ -272,6 +272,9 @@ export default class FastMal {
      * Set regions drawing default for a given type
      */
     annotationsTreeClick(node_id) {
+        if (this.annotationsTree == null) {
+            return false;
+        }
         const node_level = this.annotationsTree.tree("getNodeById", node_id).getLevel();
 
         if (node_level === 1) {
